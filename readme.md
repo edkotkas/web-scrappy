@@ -25,7 +25,7 @@ npm install -g web-scrappy
 scrappy <url> <configFile> [outFile]
 ```
 > Example url -> https://wltest.dns-systems.net/
-> Example config [here](tests\data\config.json)
+> Example config [here](tests/data/config.json)
 
 ## Developing
 Get up and running with web-scrappy on your local machine.
