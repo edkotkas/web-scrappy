@@ -1,0 +1,73 @@
+name: Node.js Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 19
+      - run: npm ci
+      - name: Build/Test
+        run: |
+          npm run build
+          npm test
+          npm run test:coverage
+      - name: Upload Dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: ./dist
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: ./coverage
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          registry-url: https://registry.npmjs.org/
+      - name: Download Dist
+        uses: actions/download-artifact@v3
+        with:
+            name: dist
+            path: ./dist
+      - name: Publish NPM
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+  publish-gpr:
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+        packages: write
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 19
+            registry-url: https://npm.pkg.github.com/
+            scope: '@edkotkas'
+        - run: echo "$( jq '.name = "@edkotkas/web-scrappy"' package.json )" > package.json
+        - name: Download Dist
+          uses: actions/download-artifact@v3
+          with:
+            name: dist
+            path: ./dist
+        - name: Publish GHR
+          run: npm publish
+          env:
+            NODE_AUTH_TOKEN: ${{secrets.GPR_TOKEN}}

@@ -1,0 +1,9 @@
+{
+  "src": "./src",
+  "clean": true,
+  "check-coverage": true,
+  "lines": 97,
+  "branches": 89,
+  "statements": 97,
+  "reporter": ["text", "html", "cobertura"]
+}

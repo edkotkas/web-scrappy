@@ -1,0 +1,54 @@
+{
+  "type": "list",
+  "path": ".package",
+  "options": {
+    "sort": {
+      "by": "price",
+      "order": "desc",
+      "transform": {
+        "type": "math",
+        "operator": "multiply",
+        "value": 12,
+        "condition": {
+          "prop": "title",
+          "type": "contains",
+          "value": "12 Months"
+        }
+      }
+    }
+  },
+  "value": {
+    "type": "object",
+    "props": [
+      {
+        "path": ".header h3",
+        "type": "text",
+        "key": "title"
+      },
+      {
+        "path": ".package-description",
+        "type": "text",
+        "key": "description"
+      },
+      {
+        "path": ".package-price .price-big",
+        "type": "number",
+        "pattern": {
+          "match": "£((?:\\d+)\\.?(?:\\d+))?",
+          "index": 1
+        },
+        "key": "price"
+      },
+      {
+        "path": ".package-price p",
+        "pattern": {
+          "match": "£((?:\\d+)\\.?(?:\\d+))?\\s",
+          "index": 1
+        },
+        "nullable": true,
+        "type": "number",
+        "key": "discount"
+      }
+    ]
+  }
+}
