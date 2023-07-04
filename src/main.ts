@@ -1,44 +1,26 @@
-#!/usr/bin/env node
+import type { ScrappyConfig } from '@models'
+import { AttributeProcessor, ListProcessor, NumberProcessor, ObjectProcessor, TextProcessor } from '@processors'
+import { ProcessorService, PuppyService } from '@services'
 
-import fs from 'node:fs/promises'
-import path from 'node:path'
+export class Scrappy {
 
-import { PuppetService } from './services/puppet.service.js'
-import { ScraperService } from './services/scraper.service.js'
+  processor: ProcessorService
+  puppy: PuppyService
 
-let puppet!: PuppetService
+  private processors = [
+    TextProcessor,
+    NumberProcessor,
+    ObjectProcessor,
+    ListProcessor,
+    AttributeProcessor
+  ]
 
-async function start(): Promise<void> {
-  const [url, conf, out] = process.argv.slice(2)
-  const cwd = process.cwd()
+  constructor(opts?: ScrappyConfig) {
+    this.processor = new ProcessorService()
+    this.processors.forEach(proc => {
+      this.processor.register(proc)
+    })
 
-  puppet = new PuppetService()
-  await puppet.init()
-  await puppet.fetch(url)
-  
-  const configFile = await fs.readFile(path.join(cwd, conf), 'utf-8')
-  const config = JSON.parse(configFile)
-  const scraper = new ScraperService(config, puppet.page)
-  const result = await scraper.read()
-
-  if (!out) {
-    return console.log(result)
-  }
-
-  await fs.writeFile(
-    path.join(cwd, out),
-    JSON.stringify(result, null, 2)
-  )
-
-  await puppet.destroy()
-}
-
-try{
-  await start()
-} catch(e) {
-  console.error(e)
-} finally {
-  if(puppet) {
-    puppet.destroy()
+    this.puppy = new PuppyService(opts?.pupConfig)
   }
 }

@@ -3,14 +3,17 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Yet another web scraper.",
-  "main": "main.js",
+  "main": "dist/main.js",
+  "files": [
+    "dist"
+  ],
   "bin": {
-    "scrappy": "dist/main.js"
+    "scrappy": "dist/cli.js"
   },
   "scripts": {
-    "start": "tsx src/main.ts",
+    "start": "tsx src/cli.ts",
     "prebuild": "node ./node_modules/del-cli/cli.js dist/",
-    "build": "tsc --build src",
+    "build": "tsc --build src && tsc-alias -p src/tsconfig.json",
     "test": "tsx tests",
     "test:watch": "tsx --watch tests",
     "test:coverage": "c8 npm run test"
@@ -29,6 +32,7 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "jasmine": "^5.0.0",
+    "tsc-alias": "^1.8.7",
     "tsx": "^3.12.7",
     "typescript": "^5.1.3"
   },
