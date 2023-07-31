@@ -1,37 +1,85 @@
-import type { Browser, HTTPResponse, Page, PuppeteerLaunchOptions } from 'puppeteer'
-import { launch } from 'puppeteer'
+import type { PageData, ScrappyOptions } from '@models'
+import type { Browser, HTTPResponse, PuppeteerLaunchOptions } from 'puppeteer'
+import type { PuppeteerExtraPlugin } from 'puppeteer-extra'
+import puppeteer from 'puppeteer-extra'
+
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 
 export class PuppyService {
-  private _options: PuppeteerLaunchOptions = {
-    headless: 'new'
-  }
-  
-  private pup?: Browser
-  private page?: Page
-  private content?: HTTPResponse | null
-
-  constructor(
-    private options?: PuppeteerLaunchOptions
-  ) {
-    this.options ??= this._options
+  private options: PuppeteerLaunchOptions = {
+    headless: 'new',
+    slowMo: 750
   }
 
-  async setup(): Promise<void> {
-    this.pup ??= await launch(this.options)
-    this.page ??= await this.pup.newPage()
+  private browser?: Browser
+  private pages: Record<string, PageData> = {}
+
+  constructor(options?: ScrappyOptions) {
+    this.options = Object.assign({}, this.options, options?.pup)
+    this.setDefaultPlugins(options)
   }
 
-  async fetch(url: string): Promise<Page> {
-    if (!this.pup || !this.page) {
-      throw new Error('no pup|page set')
+  setDefaultPlugins(options?: ScrappyOptions): void {
+    puppeteer.use(StealthPlugin())
+    if (options) {
+      puppeteer.use(AdblockerPlugin())
+    }
+  }
+
+  usePlugins(...plugins: PuppeteerExtraPlugin[]): void {
+    plugins.forEach((p) => {
+      puppeteer.use(p)
+    })
+  }
+
+  async init(): Promise<void> {
+    this.browser ??= await puppeteer.launch(this.options)
+  }
+
+  async fetch(url: string): Promise<PageData> {
+    if (!this.browser) {
+      throw new Error('no browser initialized')
     }
 
-    this.content = await this.page.goto(url)
+    const page = await this.browser.newPage()
 
-    return this.page
+    const res: HTTPResponse[] = []
+    page.on('response', (response) => {
+      res.push(response)
+    })
+
+    await page.goto(url, {
+      waitUntil: 'load'
+    })
+
+    const data = {
+      page,
+      res
+    }
+
+    this.pages[url] = data
+
+    return data
+  }
+
+  getPage(url: string): PageData {
+    return this.pages[url]
+  }
+
+  async destroyPage(url: string): Promise<void> {
+    await this.pages[url].page.close()
+
+    const { [url]: _, ...rest } = this.pages
+    this.pages = rest
   }
 
   async destroy(): Promise<void> {
-    await this.pup?.close()
+    if (!this.browser) {
+      return
+    }
+
+    this.browser.process()?.kill()
+    await this.browser.close()
   }
 }

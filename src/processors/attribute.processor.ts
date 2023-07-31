@@ -2,26 +2,44 @@ import type { ElementHandle } from 'puppeteer'
 import type { AttributeConfig } from '@models'
 import type { ProcessorService } from '@services'
 import { Processor } from '@models'
+import log from '../logger'
 
 export class AttributeProcessor extends Processor {
-
   constructor(processor: ProcessorService) {
     super('Attribute', processor)
   }
 
-  async process(conf: AttributeConfig, node: ElementHandle): Promise<string | null> {
+  async process(
+    conf: AttributeConfig,
+    node: ElementHandle
+  ): Promise<string | undefined> {
     const attr = conf.attr
     if (!attr) {
       throw new Error(`'attr' not set`)
     }
-    
+
     try {
-      const text = await node.$eval(conf.path, (e, a) => e.getAttribute(a), attr)
-      return text ?? ''
+      const text = await node.$eval(
+        conf.path,
+        (e, a) => e.getAttribute(a),
+        attr
+      )
+
+      if(!text) {
+        if (conf.nullable) {
+          return
+        }
+
+        throw new Error(`failed to get attribute '${attr}' in '${conf.path}'`)
+      }
+
+      log(this.type, attr, text)
+
+      return text
     } catch (e) {
       const error = e as Error
       if (error.message.includes('failed to find element') && conf.nullable) {
-        return ''
+        return
       }
 
       throw e

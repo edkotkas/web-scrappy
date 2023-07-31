@@ -123,3 +123,4 @@ fabric.properties
 .alia*.json
 dist/
 *.tsbuildinfo
+temp/

@@ -1,19 +1,19 @@
 {
   "name": "web-scrappy",
   "version": "0.1.0",
-  "type": "module",
   "description": "Yet another web scraper.",
-  "main": "dist/main.js",
+  "main": "dist/src/main.js",
   "files": [
     "dist"
   ],
   "bin": {
-    "scrappy": "dist/cli.js"
+    "scrappy": "dist/src/cli.js"
   },
   "scripts": {
-    "start": "tsx src/cli.ts",
+    "start": "scrappy",
+    "dev": "tsx src/cli.ts",
     "prebuild": "node ./node_modules/del-cli/cli.js dist/",
-    "build": "tsc --build src && tsc-alias -p src/tsconfig.json",
+    "build": "tsc --build && tsc-alias -p tsconfig.json",
     "test": "tsx tests",
     "test:watch": "tsx --watch tests",
     "test:coverage": "c8 npm run test"
@@ -37,6 +37,10 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
-    "puppeteer": "^20.5.0"
+    "puppeteer": "^20.5.0",
+    "json-stream-stringify": "^3.1.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-adblocker": "^2.13.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   }
 }
