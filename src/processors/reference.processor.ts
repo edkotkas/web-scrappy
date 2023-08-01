@@ -23,7 +23,7 @@ export class ReferenceProcessor extends Processor {
         throw new Error(`failed to get ref '${conf.use}'`)
       }
 
-      const ref = this.processor.context.getRef(conf.use) 
+      const ref = this.processor.getRef(conf.use) 
       const proc = this.processor.get(ref.type)
 
       log(this.type, ref)

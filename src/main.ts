@@ -1,5 +1,5 @@
 import env from './env'
-import type { Config, ScrappyOptions, Values } from '@models'
+import type { ConfigTypes, ScrappyOptions, Values } from '@models'
 import {
   AttributeProcessor,
   ImageProcessor,
@@ -27,25 +27,25 @@ export class Scrappy {
     ReferenceProcessor
   ]
 
-  constructor(conf: Config | Config[], opts?: ScrappyOptions) {
+  constructor(opts?: ScrappyOptions) {
     env.log = opts?.log ?? false
     env.adblock = opts?.adblock ?? false
 
-    const context = new ContextService(conf)
     const puppy = new PuppyService(opts)
 
-    this.processor = new ProcessorService(puppy, context)
+    this.processor = new ProcessorService(puppy)
     this.processors.forEach((proc) => {
       this.processor.register(proc)
     })
   }
 
-  async init(): Promise<void> {
-    await this.processor.pup.init()
+  async init(conf: ConfigTypes | ConfigTypes[]): Promise<void> {
+    const context = new ContextService(conf)
+    await this.processor.init(context)
   }
 
-  async fetch(url: string): Promise<Values> {
-    return this.processor.read(url)
+  async fetch<T = Values>(url: string): Promise<T> {
+    return this.processor.read(url) as T
   }
 
   async destroy(): Promise<void> {

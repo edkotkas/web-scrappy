@@ -1,11 +1,18 @@
-import type { Config, IProcessor, Processor, Values } from '@models'
+import type { Config, ConfigTypes, IProcessor, Processor, Values } from '@models'
 import type { PuppyService } from './puppy.service'
 import type { ContextService } from './context.service'
 
 export class ProcessorService {
   processors: Record<string, Processor> = {}
 
-  constructor(public pup: PuppyService, public context: ContextService) {}
+  context!: ContextService
+
+  constructor(public pup: PuppyService) {}
+
+  async init(context: ContextService): Promise<void> {
+    this.context = context
+    await this.pup.init()
+  }
 
   register(processor: IProcessor, overwrite?: boolean): void {
     const proc = new processor(this)
@@ -46,5 +53,9 @@ export class ProcessorService {
     await data.page.close()
 
     return result
+  }
+
+  getRef(ref: string): ConfigTypes {
+    return this.context.getRef(ref)
   }
 }

@@ -37,11 +37,11 @@ void (async function (): Promise<void> {
     .map((c) => fs.promises.readFile(path.join(cwd, c), 'utf-8'))
 
   const confProms = await Promise.all(confFiles)
-  const parsedConfs = confProms.map((c) => JSON.parse(c) as Config)
+  const parsedConfs = confProms.map((c: string) => JSON.parse(c) as Config)
   const multiConf = parsedConfs.length > 1
-  const scrappy = new Scrappy(multiConf ? parsedConfs : parsedConfs[0], env)
+  const scrappy = new Scrappy(env)
 
-  await scrappy.init()
+  await scrappy.init(multiConf ? parsedConfs : parsedConfs[0])
 
   const result = await scrappy.fetch(url)
 

@@ -1,11 +1,11 @@
 import type { ConfigTypes } from '@models'
 
 export class ContextService {
-  private context: {
+  private context!: {
     confs: Record<string, ConfigTypes>
   }
 
-  main: ConfigTypes
+  main!: ConfigTypes
 
   constructor(conf: ConfigTypes | ConfigTypes[]) {
     this.context = { confs: {} }
