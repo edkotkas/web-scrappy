@@ -1,23 +1,28 @@
 import type { ElementHandle } from 'puppeteer'
 import type { PageData, RecordConfig, RecordValue } from '@models'
-import type { ProcessorService } from '@services'
+import type { ContextService, ProcessorService } from '@services'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class ObjectProcessor extends Processor {
   constructor(processor: ProcessorService) {
     super('Object', processor)
   }
 
-  async process(conf: RecordConfig, node: ElementHandle, pupData: PageData): Promise<RecordValue> {
-    const result: Record<string, unknown> = {}
+  async process(
+    conf: RecordConfig,
+    node: ElementHandle,
+    data: PageData,
+    context: ContextService
+  ): Promise<RecordValue> {
+    const result: RecordValue = {}
 
     for (const prop of conf.props) {
       const proc = this.processor.get(prop.type)
-      result[prop.key] = await proc.process(prop, node, pupData)
-      log(this.type, prop.key, result[prop.key])
+      result[prop.key] = await proc.process(prop, node, data, context)
     }
 
-    return result as RecordValue
+    context.events.emit('step', conf, result)
+
+    return result
   }
 }

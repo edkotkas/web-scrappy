@@ -1,5 +1,10 @@
 import env from './env'
-import type { ConfigTypes, ScrappyOptions, Values } from '@models'
+import type {
+  ConfigTypes,
+  ContextEvents,
+  ScrappyOptions,
+  Values
+} from '@models'
 import {
   AttributeProcessor,
   ImageProcessor,
@@ -7,11 +12,10 @@ import {
   NumberProcessor,
   ObjectProcessor,
   ReferenceProcessor,
-  TextProcessor
+  TextProcessor,
+  FollowProcessor
 } from '@processors'
-import { ProcessorService, PuppyService } from '@services'
-import { FollowProcessor } from './processors/follow.processor'
-import { ContextService } from './services/context.service'
+import { ProcessorService, PuppyService, ContextService } from '@services'
 
 export class Scrappy {
   private processor: ProcessorService
@@ -39,9 +43,10 @@ export class Scrappy {
     })
   }
 
-  async init(conf: ConfigTypes | ConfigTypes[]): Promise<void> {
+  async init(conf: ConfigTypes | ConfigTypes[]): Promise<ContextEvents> {
     const context = new ContextService(conf)
     await this.processor.init(context)
+    return context.events
   }
 
   async fetch<T = Values>(url: string): Promise<T> {

@@ -1,8 +1,9 @@
-import type { HTTPResponse } from 'puppeteer'
+export type Value = number | string | undefined
+// export type RecordValue = Record<string, Value>
 
-export type Value = HTTPResponse | Buffer | number | string | undefined
-export type ListValue = Values[]
-export type RecordValue = Record<string, Value>
+export interface RecordValue {
+  [key: string]: Values
+}
 
 export interface ImageValue {
   url: string
@@ -10,3 +11,4 @@ export interface ImageValue {
 }
 
 export type Values = ListValue | RecordValue | ImageValue | Value
+export type ListValue = Values[]

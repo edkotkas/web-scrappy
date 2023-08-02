@@ -1,8 +1,7 @@
 import type { ElementHandle } from 'puppeteer'
-import type { AttributeConfig } from '@models'
-import type { ProcessorService } from '@services'
+import type { AttributeConfig, PageData } from '@models'
+import type { ContextService, ProcessorService } from '@services'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class AttributeProcessor extends Processor {
   constructor(processor: ProcessorService) {
@@ -11,7 +10,9 @@ export class AttributeProcessor extends Processor {
 
   async process(
     conf: AttributeConfig,
-    node: ElementHandle
+    node: ElementHandle,
+    _: PageData,
+    context: ContextService
   ): Promise<string | undefined> {
     const attr = conf.attr
     if (!attr) {
@@ -25,7 +26,7 @@ export class AttributeProcessor extends Processor {
         attr
       )
 
-      if(!text) {
+      if (!text) {
         if (conf.nullable) {
           return
         }
@@ -33,7 +34,7 @@ export class AttributeProcessor extends Processor {
         throw new Error(`failed to get attribute '${attr}' in '${conf.path}'`)
       }
 
-      log(this.type, attr, text)
+      context.events.emit('step', conf, text)
 
       return text
     } catch (e) {

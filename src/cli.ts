@@ -41,7 +41,10 @@ void (async function (): Promise<void> {
   const multiConf = parsedConfs.length > 1
   const scrappy = new Scrappy(env)
 
-  await scrappy.init(multiConf ? parsedConfs : parsedConfs[0])
+  const events = await scrappy.init(multiConf ? parsedConfs : parsedConfs[0])
+  events.on('step', (conf, result) => {
+    log(conf.type, result)
+  })
 
   const result = await scrappy.fetch(url)
 
@@ -52,7 +55,7 @@ void (async function (): Promise<void> {
 
   const ws = fs.createWriteStream(out)
   const jss = new JsonStreamStringify(result)
-  jss.once('error', (err) => {
+  jss.once('error', (err: any) => {
     throw new Error(`Failed to write output: ${err.message}`)
   })
 

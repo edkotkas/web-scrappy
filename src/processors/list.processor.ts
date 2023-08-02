@@ -1,8 +1,7 @@
 import type { ElementHandle } from 'puppeteer'
 import type { ListConfig, PageData, Values } from '@models'
-import type { ProcessorService } from '@services'
+import type { ContextService, ProcessorService } from '@services'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class ListProcessor extends Processor {
   constructor(processor: ProcessorService) {
@@ -16,15 +15,19 @@ export class ListProcessor extends Processor {
   async process(
     conf: ListConfig,
     node: ElementHandle,
-    pupData: PageData
+    data: PageData,
+    context: ContextService
   ): Promise<Values[]> {
     const proc = this.processor.get(conf.value.type)
     const nodes = await node.$$(conf.path)
-    const procs = nodes.map((node) => proc.process(conf.value, node, pupData))
+    const procs = nodes.map((node) =>
+      proc.process(conf.value, node, data, context)
+    )
 
     if (!conf.sequence) {
       const result = await Promise.all(procs)
-      log(this.type, result)
+      context.events.emit('step', conf, result)
+
       return result
     }
 
@@ -36,10 +39,9 @@ export class ListProcessor extends Processor {
 
       const res = await node
       results.push(res)
-
     }
 
-    log(this.type, results)
+    context.events.emit('step', conf, results)
 
     return results
   }

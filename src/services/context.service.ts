@@ -1,15 +1,31 @@
-import type { ConfigTypes } from '@models'
+import type { ConfigTypes, ContextEvents, Values } from '@models'
+import { EventEmitter } from 'node:events'
 
 export class ContextService {
-  private context!: {
-    confs: Record<string, ConfigTypes>
-  }
-
+  private confs: Record<string, ConfigTypes> = {}
   main!: ConfigTypes
 
-  constructor(conf: ConfigTypes | ConfigTypes[]) {
-    this.context = { confs: {} }
+  private _events = new EventEmitter()
+  get events(): ContextEvents {
+    return {
+      on: (
+        key: string,
+        listener: (conf: ConfigTypes, result: Values) => void
+      ) => this._events.on(key, listener),
+      off: (
+        key: string,
+        listener: (conf: ConfigTypes, result: Values) => void
+      ) => this._events.off(key, listener),
+      emit: (key: string, conf: ConfigTypes, result: Values) =>
+        this._events.emit(key, conf, result)
+    }
+  }
 
+  constructor(conf: ConfigTypes | ConfigTypes[]) {
+    this.process(conf)
+  }
+
+  process(conf: ConfigTypes | ConfigTypes[]) {
     if (Array.isArray(conf)) {
       const main = conf.find((c) => c.main)
       if (!main) {
@@ -20,38 +36,50 @@ export class ContextService {
 
       this.main = main
 
-      conf.forEach((c) => {
-        this.process(c)
-      })
+      conf.forEach((c) => this.processConf(c))
 
       return
     }
 
     this.main = conf
-    this.process(conf)
+    this.processConf(conf)
   }
 
-  private process(conf: ConfigTypes): void {
-    if (conf.ref) {
-      this.context.confs[conf.ref] = conf
+  getRef(ref: string): ConfigTypes {
+    return this.confs[ref]
+  }
+
+  private processConf(conf: ConfigTypes): void {
+    this.dig(conf, (c) => {
+      if (c.ref) {
+        this.confs[c.ref] = conf
+      }
+    })
+  }
+
+  dig(
+    conf: ConfigTypes,
+    action: (conf: ConfigTypes) => void,
+    parent?: ConfigTypes
+  ) {
+    if (parent) {
+      conf.parent = parent
     }
 
+    action(conf)
+
     if ('value' in conf) {
-      this.process(conf.value)
+      this.dig(conf.value, action, conf)
     }
 
     if ('conf' in conf) {
-      this.process(conf.conf)
+      this.dig(conf.conf, action, conf)
     }
 
     if ('props' in conf) {
       conf.props.forEach((p) => {
-        this.process(p)
+        this.dig(p, action, conf)
       })
     }
-  }
-
-  getRef(ref: string): ConfigTypes {
-    return this.context.confs[ref]
   }
 }

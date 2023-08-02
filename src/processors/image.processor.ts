@@ -1,9 +1,13 @@
 import type { ElementHandle, HTTPResponse } from 'puppeteer'
-import type { AttributeConfig, ElementConfig, ImageValue, PageData } from '@models'
-import type { ProcessorService } from '@services'
+import type {
+  AttributeConfig,
+  ElementConfig,
+  ImageValue,
+  PageData
+} from '@models'
+import type { ContextService, ProcessorService } from '@services'
 import type { AttributeProcessor } from '@processors'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class ImageProcessor extends Processor {
   private attrProcessor: AttributeProcessor
@@ -17,7 +21,8 @@ export class ImageProcessor extends Processor {
   async process(
     conf: ElementConfig,
     node: ElementHandle,
-    data: PageData
+    data: PageData,
+    context: ContextService
   ): Promise<ImageValue | undefined> {
     try {
       const attrConf: AttributeConfig = {
@@ -25,7 +30,12 @@ export class ImageProcessor extends Processor {
         attr: 'src'
       }
 
-      const text = await this.attrProcessor.process(attrConf, node)
+      const text = await this.attrProcessor.process(
+        attrConf,
+        node,
+        data,
+        context
+      )
       if (!text) {
         if (conf.nullable) {
           return
@@ -46,9 +56,11 @@ export class ImageProcessor extends Processor {
         throw new Error(`failed to get buffer for '${url.pathname}'`)
       }
 
-      log(this.type, text, buffer)
+      const result = { url: text, buffer }
 
-      return { url: text, buffer }
+      context.events.emit('step', conf, result)
+
+      return result
     } catch (e) {
       const error = e as Error
       if (error.message.includes('failed to find element') && conf.nullable) {
@@ -59,7 +71,10 @@ export class ImageProcessor extends Processor {
     }
   }
 
-  private getResponse(res: HTTPResponse[], url: string): HTTPResponse | undefined {
-    return res.find(r => r.url().includes(url))
+  private getResponse(
+    res: HTTPResponse[],
+    url: string
+  ): HTTPResponse | undefined {
+    return res.find((r) => r.url().includes(url))
   }
 }

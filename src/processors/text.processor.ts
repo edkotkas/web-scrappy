@@ -1,15 +1,19 @@
 import type { ElementHandle } from 'puppeteer'
-import type { Pattern, TextConfig } from '@models'
-import type { ProcessorService } from '@services'
+import type { PageData, Pattern, TextConfig } from '@models'
+import type { ContextService, ProcessorService } from '@services'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class TextProcessor extends Processor {
   constructor(processor: ProcessorService) {
     super('Text', processor)
   }
 
-  async process(conf: TextConfig, node: ElementHandle): Promise<string | undefined> {
+  async process(
+    conf: TextConfig,
+    node: ElementHandle,
+    _: PageData,
+    context: ContextService
+  ): Promise<string | undefined> {
     try {
       const text = await node.$eval(conf.path, (e) => e.textContent)
       if (!text) {
@@ -18,9 +22,15 @@ export class TextProcessor extends Processor {
 
       let result = conf.pattern ? this.pattern(conf.pattern, text) : text
 
-      result = conf.trim ? result?.trim() ?? '' : result
+      if (conf.trim && result) {
+        result = result
+          .trim()
+          .split(' ')
+          .filter((x) => x.trim())
+          .join(' ')
+      }
 
-      log(this.type, result)
+      context.events.emit('step', conf, result)
 
       return result
     } catch (e) {

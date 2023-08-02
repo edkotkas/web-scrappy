@@ -1,8 +1,7 @@
 import type { ElementHandle } from 'puppeteer'
 import type { PageData, ReferenceConfig, Values } from '@models'
-import type { ProcessorService } from '@services'
+import type { ContextService, ProcessorService } from '@services'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class ReferenceProcessor extends Processor {
   constructor(processor: ProcessorService) {
@@ -12,7 +11,8 @@ export class ReferenceProcessor extends Processor {
   async process(
     conf: ReferenceConfig,
     node: ElementHandle,
-    data: PageData
+    data: PageData,
+    context: ContextService
   ): Promise<Values> {
     try {
       if (!conf.use) {
@@ -23,12 +23,10 @@ export class ReferenceProcessor extends Processor {
         throw new Error(`failed to get ref '${conf.use}'`)
       }
 
-      const ref = this.processor.getRef(conf.use) 
+      const ref = this.processor.getRef(conf.use)
       const proc = this.processor.get(ref.type)
 
-      log(this.type, ref)
-
-      return proc.process(ref, node, data)
+      return proc.process(ref, node, data, context)
     } catch (e) {
       const error = e as Error
       if (error.message.includes('failed to find element') && conf.nullable) {

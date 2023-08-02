@@ -1,4 +1,10 @@
-import type { Config, ConfigTypes, IProcessor, Processor, Values } from '@models'
+import type {
+  Config,
+  ConfigTypes,
+  IProcessor,
+  Processor,
+  Values
+} from '@models'
 import type { PuppyService } from './puppy.service'
 import type { ContextService } from './context.service'
 
@@ -49,7 +55,7 @@ export class ProcessorService {
       throw new Error(`failed to get root node`)
     }
 
-    const result = await processor.process(conf, node, data)
+    const result = await processor.process(conf, node, data, this.context)
     await data.page.close()
 
     return result

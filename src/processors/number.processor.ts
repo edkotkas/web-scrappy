@@ -1,9 +1,8 @@
 import type { ElementHandle } from 'puppeteer'
-import type {  ElementConfig } from '@models'
-import type { ProcessorService } from '@services'
+import type { ElementConfig, PageData } from '@models'
+import type { ContextService, ProcessorService } from '@services'
 import type { TextProcessor } from '@processors'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class NumberProcessor extends Processor {
   private textProcessor: TextProcessor
@@ -14,8 +13,13 @@ export class NumberProcessor extends Processor {
     this.textProcessor = this.processor.get('Text')
   }
 
-  async process(conf: ElementConfig, node: ElementHandle): Promise<number | undefined> {
-    const text = await this.textProcessor.process(conf, node)
+  async process(
+    conf: ElementConfig,
+    node: ElementHandle,
+    data: PageData,
+    context: ContextService
+  ): Promise<number | undefined> {
+    const text = await this.textProcessor.process(conf, node, data, context)
     const num = Number(text)
     const result = isNaN(num) ? num : null
 
@@ -27,7 +31,7 @@ export class NumberProcessor extends Processor {
       throw new Error(`failed to get number in '${conf.path}'`)
     }
 
-    log(this.type, result)
+    context.events.emit('step', conf, result)
 
     return result
   }

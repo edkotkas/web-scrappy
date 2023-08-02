@@ -1,10 +1,11 @@
 export interface Config {
   type: string
-  
+
   main?: boolean
   ref?: string
   root?: string
   nullable?: boolean
+  parent?: ConfigTypes
 }
 
 export interface ElementConfig extends Config {
@@ -47,4 +48,12 @@ export interface ReferenceConfig extends Config {
   use: string
 }
 
-export type ConfigTypes = TextConfig | RecordConfig  | ReferenceConfig | ListConfig | AttributeConfig | FollowConfig | ElementConfig | Config
+export type ConfigTypes =
+  | TextConfig
+  | RecordConfig
+  | ReferenceConfig
+  | ListConfig
+  | AttributeConfig
+  | FollowConfig
+  | ElementConfig
+  | Config

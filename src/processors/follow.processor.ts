@@ -1,9 +1,8 @@
 import type { ElementHandle } from 'puppeteer'
-import type { FollowConfig, Values } from '@models'
-import type { ProcessorService } from '@services'
+import type { FollowConfig, PageData, Values } from '@models'
+import type { ContextService, ProcessorService } from '@services'
 import type { AttributeProcessor } from '@processors'
 import { Processor } from '@models'
-import log from '../logger'
 
 export class FollowProcessor extends Processor {
   private attrProcessor: AttributeProcessor
@@ -15,18 +14,20 @@ export class FollowProcessor extends Processor {
 
   async process(
     conf: FollowConfig,
-    node: ElementHandle
+    node: ElementHandle,
+    data: PageData,
+    context: ContextService
   ): Promise<Values> {
     try {
-      const url = await this.attrProcessor.process(conf, node)
+      const url = await this.attrProcessor.process(conf, node, data, context)
       if (!url) {
         return
       }
 
       const result = await this.processor.follow(url, conf.conf)
-      
-      log(this.type, url, result)
-      
+
+      context.events.emit('step', conf, result)
+
       return result
     } catch (e) {
       const error = e as Error
