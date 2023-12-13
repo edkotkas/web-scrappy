@@ -1,44 +1,70 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs/promises'
+import { JsonStreamStringify } from 'json-stream-stringify'
 import path from 'node:path'
-
-import type { PuppyService } from '@services'
+import fs from 'node:fs'
 import type { Config } from '@models'
-import { Scrappy } from './main.js'
+import { Scrappy } from './main'
+import env from './env'
+import log from './logger'
 
-let pup!: PuppyService
+function handlePrimitiveCli(args: string[]): string[] {
+  if (args.includes('--verbose')) {
+    args = args.filter((a) => a !== '--verbose')
+    env.log = true
+  }
 
-async function start(): Promise<void> {
-  const [url, conf, out] = process.argv.slice(2)
+  if (args.includes('--adblock=false')) {
+    args = args.filter((a) => a !== '--adblock=false')
+    env.adblock = false
+  }
+
+  return args
+}
+
+void (async function (): Promise<void> {
+  const args: string[] = handlePrimitiveCli(process.argv.slice(2))
+
+  const [url, conf, out] = args
+  log('args', args)
+  log('env', JSON.stringify(env))
+
   const cwd = process.cwd()
+  log('cwd', cwd)
+  const confFiles = conf
+    .split(';')
+    .filter((x) => x.trim())
+    .map((c) => fs.promises.readFile(path.join(cwd, c), 'utf-8'))
 
-  const { puppy, processor } = new Scrappy()
-  pup = puppy
+  const confProms = await Promise.all(confFiles)
+  const parsedConfs = confProms.map((c: string) => JSON.parse(c) as Config)
+  const multiConf = parsedConfs.length > 1
+  const scrappy = new Scrappy(env)
 
-  await puppy.setup()
-  const page = await puppy.fetch(url)
-  
-  const configFile = await fs.readFile(path.join(cwd, conf), 'utf-8')
-  const config = JSON.parse(configFile) as Config
-  const result = await processor.read(config, page)
+  const events = await scrappy.init(multiConf ? parsedConfs : parsedConfs[0])
+  events.on('step', (conf, result) => {
+    log(conf.type, result)
+  })
+
+  const result = await scrappy.fetch(url)
 
   if (!out) {
+    await scrappy.destroy()
     return console.log(result)
   }
 
-  await fs.writeFile(
-    path.join(cwd, out),
-    JSON.stringify(result, null, 2)
-  )
+  const ws = fs.createWriteStream(out)
+  const jss = new JsonStreamStringify(result)
+  jss.once('error', (err: any) => {
+    throw new Error(`Failed to write output: ${err.message}`)
+  })
 
-  await pup.destroy()
-}
+  log('Writing to', out)
 
-try{
-  await start()
-} catch(e) {
-  console.error(e)
-} finally {
-  await pup.destroy()
-}
+  jss.pipe(ws)
+  jss.on('end', () => {
+    ws.end()
+  })
+
+  await scrappy.destroy()
+})()

@@ -1,24 +1,36 @@
 import type { ElementHandle } from 'puppeteer'
-import type { Pattern, TextConfig } from '@models'
-import type { ProcessorService } from '@services'
-import { Processor, } from '@models'
+import type { PageData, Pattern, TextConfig } from '@models'
+import type { ContextService, ProcessorService } from '@services'
+import { Processor } from '@models'
 
 export class TextProcessor extends Processor {
-
   constructor(processor: ProcessorService) {
     super('Text', processor)
   }
 
-  async process(conf: TextConfig, node: ElementHandle): Promise<string | null> {
+  async process(
+    conf: TextConfig,
+    node: ElementHandle,
+    _: PageData,
+    context: ContextService
+  ): Promise<string | undefined> {
     try {
-      const text = await node.$eval(conf.path, e => e.textContent)
+      const text = await node.$eval(conf.path, (e) => e.textContent)
       if (!text) {
         return ''
       }
 
-      const result = conf.pattern
-        ? this.pattern(conf.pattern, text)
-        : text
+      let result = conf.pattern ? this.pattern(conf.pattern, text) : text
+
+      if (conf.trim && result) {
+        result = result
+          .trim()
+          .split(' ')
+          .filter((x) => x.trim())
+          .join(' ')
+      }
+
+      context.events.emit('step', conf, result)
 
       return result
     } catch (e) {
@@ -31,8 +43,8 @@ export class TextProcessor extends Processor {
     }
   }
 
-  private pattern(pattern: Pattern, text: string): string | null {
+  private pattern(pattern: Pattern, text: string): string | undefined {
     const match = RegExp(pattern.match).exec(text)
-    return match?.[pattern.index] ?? null
+    return match?.[pattern.index]
   }
 }

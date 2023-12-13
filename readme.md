@@ -22,7 +22,7 @@ npm install -g web-scrappy
 ## Usage
 
 ```bash
-scrappy <url> <configFile> [outFile]
+scrappy <url> <configFile[;configFile]> [outFile]
 ```
 
 ## Developing
@@ -45,7 +45,7 @@ npm i
 
 - Run the script
 ```bash
-npm start -- <url> <configFile> [outFile]
+npm run dev -- <url> <configFile[;configFile]> [outFile]
 ```
 
 - Add issues to Github, make changes to the project and create pull requests for review

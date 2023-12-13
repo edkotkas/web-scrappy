@@ -1,11 +1,23 @@
-import type { Config, IProcessor, Processor } from '@models'
-import type { Page } from 'puppeteer'
+import type {
+  Config,
+  ConfigTypes,
+  IProcessor,
+  Processor,
+  Values
+} from '@models'
+import type { PuppyService } from './puppy.service'
+import type { ContextService } from './context.service'
 
 export class ProcessorService {
-
   processors: Record<string, Processor> = {}
 
-  constructor() {
+  context!: ContextService
+
+  constructor(public pup: PuppyService) {}
+
+  async init(context: ContextService): Promise<void> {
+    this.context = context
+    await this.pup.init()
   }
 
   register(processor: IProcessor, overwrite?: boolean): void {
@@ -25,10 +37,31 @@ export class ProcessorService {
     return this.processors[name] as T
   }
 
-  async read(conf: Config, page: Page): Promise<unknown> {
-    const processor = this.get(conf.type)
-    const node = await page.$('html')
+  async read(url: string): Promise<Values> {
+    const conf = this.context.main
 
-    return processor.process(conf, node)
+    return this.follow(url, conf)
+  }
+
+  async follow(url: string, conf: Config): Promise<Values> {
+    const data = await this.pup.fetch(url)
+    const processor = this.get(conf.type)
+    const node = await data.page.$(conf.root ?? 'html')
+    if (!node) {
+      if (conf.nullable) {
+        return
+      }
+
+      throw new Error(`failed to get root node`)
+    }
+
+    const result = await processor.process(conf, node, data, this.context)
+    await data.page.close()
+
+    return result
+  }
+
+  getRef(ref: string): ConfigTypes {
+    return this.context.getRef(ref)
   }
 }
