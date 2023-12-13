@@ -8,12 +8,10 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 
 export class PuppyService {
   private options: PuppeteerLaunchOptions = {
-    headless: 'new',
-    slowMo: 750
+    headless: 'new'
   }
 
   private browser?: Browser
-  private pages: Record<string, PageData> = {}
 
   constructor(options?: ScrappyOptions) {
     this.options = Object.assign({}, this.options, options?.pup)
@@ -22,7 +20,7 @@ export class PuppyService {
 
   setDefaultPlugins(options?: ScrappyOptions): void {
     puppeteer.use(StealthPlugin())
-    if (options) {
+    if (options?.adblock) {
       puppeteer.use(AdblockerPlugin())
     }
   }
@@ -58,20 +56,8 @@ export class PuppyService {
       res
     }
 
-    this.pages[url] = data
 
     return data
-  }
-
-  getPage(url: string): PageData {
-    return this.pages[url]
-  }
-
-  async destroyPage(url: string): Promise<void> {
-    await this.pages[url].page.close()
-
-    const { [url]: _, ...rest } = this.pages
-    this.pages = rest
   }
 
   async destroy(): Promise<void> {
