@@ -48,7 +48,7 @@ export class ProcessorService {
     const processor = this.get(conf.type)
     const node = await data.page.$(conf.root ?? 'html')
     if (!node) {
-      if (conf.nullable) {
+      if (conf.null) {
         return
       }
 

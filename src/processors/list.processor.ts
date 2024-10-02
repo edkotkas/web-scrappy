@@ -20,9 +20,14 @@ export class ListProcessor extends Processor {
   ): Promise<Values[]> {
     const proc = this.processor.get(conf.value.type)
     const nodes = await node.$$(conf.path)
-    const procs = nodes.map((node) =>
+    let procs = nodes.map((node) =>
       proc.process(conf.value, node, data, context)
     )
+
+    // TODO: actual sorting
+    if (conf.order?.direction === 'reverse') {
+      procs = procs.reverse()
+    }
 
     if (!conf.sequence) {
       const result = await Promise.all(procs)

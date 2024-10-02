@@ -3,6 +3,7 @@ import type { ElementConfig, PageData } from '@models'
 import type { ContextService, ProcessorService } from '@services'
 import type { TextProcessor } from '@processors'
 import { Processor } from '@models'
+import { TextUtils } from '@utils'
 
 export class NumberProcessor extends Processor {
   private textProcessor: TextProcessor
@@ -20,11 +21,20 @@ export class NumberProcessor extends Processor {
     context: ContextService
   ): Promise<number | undefined> {
     const text = await this.textProcessor.process(conf, node, data, context)
-    const num = Number(text)
+    if (!text) {
+      if (conf.null) {
+        return
+      }
+
+      throw new Error(`failed to get text in '${conf.path}'`)
+    }
+
+    const value = TextUtils.process(conf, context, text)
+    const num = Number(value)
     const result = isNaN(num) ? num : null
 
     if (result === null) {
-      if (conf.nullable) {
+      if (conf.null) {
         return
       }
 

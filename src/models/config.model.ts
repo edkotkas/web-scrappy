@@ -1,11 +1,14 @@
+import { ValueType } from './element.model'
+
 export interface Config {
   type: string
 
   main?: boolean
   ref?: string
   root?: string
-  nullable?: boolean
+  null?: boolean
   parent?: ConfigTypes
+  vars?: Record<string, ValueType>
 }
 
 export interface ElementConfig extends Config {
@@ -13,16 +16,24 @@ export interface ElementConfig extends Config {
 }
 
 export interface AttributeConfig extends ElementConfig {
-  attr: string
+  attr?: string[]
 }
 
 export interface ListConfig extends ElementConfig {
   value: Config
   sequence?: boolean
   delay?: number
+  order?: ListOrder
+}
+
+export interface ListOrder {
+  by?: string
+  direction?: 'asc' | 'desc' | 'reverse'
 }
 
 export interface TextConfig extends ElementConfig {
+  prepend?: string
+  append?: string
   trim?: boolean
   pattern?: Pattern
 }

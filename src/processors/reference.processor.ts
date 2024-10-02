@@ -16,7 +16,7 @@ export class ReferenceProcessor extends Processor {
   ): Promise<Values> {
     try {
       if (!conf.use) {
-        if (conf.nullable) {
+        if (conf.null) {
           return
         }
 
@@ -29,7 +29,7 @@ export class ReferenceProcessor extends Processor {
       return proc.process(ref, node, data, context)
     } catch (e) {
       const error = e as Error
-      if (error.message.includes('failed to find element') && conf.nullable) {
+      if (error.message.includes('failed to find element') && conf.null) {
         return
       }
 

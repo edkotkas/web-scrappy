@@ -31,7 +31,7 @@ export class FollowProcessor extends Processor {
       return result
     } catch (e) {
       const error = e as Error
-      if (error.message.includes('failed to find element') && conf.nullable) {
+      if (error.message.includes('failed to find element') && conf.null) {
         return
       }
 

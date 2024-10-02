@@ -1,13 +1,9 @@
 import type { ElementHandle, HTTPResponse } from 'puppeteer'
-import type {
-  AttributeConfig,
-  ElementConfig,
-  ImageValue,
-  PageData
-} from '@models'
+import type { AttributeConfig, ImageValue, PageData } from '@models'
 import type { ContextService, ProcessorService } from '@services'
 import type { AttributeProcessor } from '@processors'
 import { Processor } from '@models'
+import { TextUtils } from '@utils'
 
 export class ImageProcessor extends Processor {
   private attrProcessor: AttributeProcessor
@@ -19,7 +15,7 @@ export class ImageProcessor extends Processor {
   }
 
   async process(
-    conf: ElementConfig,
+    conf: AttributeConfig,
     node: ElementHandle,
     data: PageData,
     context: ContextService
@@ -27,7 +23,12 @@ export class ImageProcessor extends Processor {
     try {
       const attrConf: AttributeConfig = {
         ...conf,
-        attr: 'src'
+        attr: conf.attr ?? ['src']
+      }
+
+      const el = await node.waitForSelector(conf.path, { visible: true })
+      if (!el) {
+        throw new Error(`failed to find element '${conf.path}'`)
       }
 
       const text = await this.attrProcessor.process(
@@ -37,33 +38,42 @@ export class ImageProcessor extends Processor {
         context
       )
       if (!text) {
-        if (conf.nullable) {
+        if (conf.null) {
           return
         }
 
         throw new Error(`failed to get '${attrConf.attr}' in '${conf.path}'`)
       }
 
-      const url = new URL(text)
+      const value = TextUtils.process(conf, context, text)
+      if (!value) {
+        if (conf.null) {
+          return
+        }
+
+        throw new Error(`failed to process value from '${attrConf.attr}'`)
+      }
+
+      const url = new URL(value)
 
       const res = this.getResponse(data.res, url.pathname)
       const buffer = await res?.buffer()
       if (!buffer) {
-        if (conf.nullable) {
+        if (conf.null) {
           return
         }
 
         throw new Error(`failed to get buffer for '${url.pathname}'`)
       }
 
-      const result = { url: text, buffer }
+      const result = { url: value, buffer }
 
       context.events.emit('step', conf, result)
 
       return result
     } catch (e) {
       const error = e as Error
-      if (error.message.includes('failed to find element') && conf.nullable) {
+      if (error.message.includes('failed to find element') && conf.null) {
         return
       }
 

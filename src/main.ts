@@ -18,7 +18,8 @@ import {
 import { ProcessorService, PuppyService, ContextService } from '@services'
 
 export class Scrappy {
-  private processor: ProcessorService
+  private readonly processor: ProcessorService
+  private readonly context: ContextService
 
   private processors = [
     TextProcessor,
@@ -32,10 +33,12 @@ export class Scrappy {
   ]
 
   constructor(opts?: ScrappyOptions) {
+    this.context = new ContextService()
+
     env.log = opts?.log ?? false
     env.adblock = opts?.adblock ?? false
 
-    const puppy = new PuppyService(opts)
+    const puppy = new PuppyService(this.context, opts)
 
     this.processor = new ProcessorService(puppy)
     this.processors.forEach((proc) => {
@@ -44,9 +47,9 @@ export class Scrappy {
   }
 
   async init(conf: ConfigTypes | ConfigTypes[]): Promise<ContextEvents> {
-    const context = new ContextService(conf)
-    await this.processor.init(context)
-    return context.events
+    this.context.init(conf)
+    await this.processor.init(this.context)
+    return this.context.events
   }
 
   async fetch<T = Values>(url: string): Promise<T> {

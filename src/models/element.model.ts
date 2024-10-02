@@ -1,5 +1,15 @@
-export type Value = number | string | undefined
-// export type RecordValue = Record<string, Value>
+export type ValueType = number | string | boolean | undefined
+
+export enum VarsEnum {
+  PREFIX = 'vars/',
+  ORIGIN = 'ORIGIN',
+  HOST = 'HOST',
+  HOSTNAME = 'HOSTNAME',
+  PATHNAME = 'PATHNAME',
+  PORT = 'PORT',
+  PROTOCOL = 'PROTOCOL',
+  SEARCH = 'SEARCH'
+}
 
 export interface RecordValue {
   [key: string]: Values
@@ -10,5 +20,5 @@ export interface ImageValue {
   buffer: Buffer
 }
 
-export type Values = ListValue | RecordValue | ImageValue | Value
+export type Values = ListValue | RecordValue | ImageValue | ValueType
 export type ListValue = Values[]

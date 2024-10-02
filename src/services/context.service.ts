@@ -1,11 +1,18 @@
-import type { ConfigTypes, ContextEvents, Values } from '@models'
+import {
+  VarsEnum,
+  type ConfigTypes,
+  type ContextEvents,
+  type ValueType,
+  type Values
+} from '@models'
 import { EventEmitter } from 'node:events'
 
 export class ContextService {
-  private confs: Record<string, ConfigTypes> = {}
+  private readonly confs: Record<string, ConfigTypes> = {}
+  private readonly vars: Record<string, ValueType> = {}
   main!: ConfigTypes
 
-  private _events = new EventEmitter()
+  private readonly _events = new EventEmitter()
   get events(): ContextEvents {
     return {
       on: (
@@ -21,7 +28,9 @@ export class ContextService {
     }
   }
 
-  constructor(conf: ConfigTypes | ConfigTypes[]) {
+  constructor() {}
+
+  init(conf: ConfigTypes | ConfigTypes[]) {
     this.process(conf)
   }
 
@@ -49,15 +58,33 @@ export class ContextService {
     return this.confs[ref]
   }
 
+  setVar(key: string, value: ValueType): void {
+    this.vars[key] = value
+  }
+
+  getVar(key: string | undefined): ValueType {
+    if (!key?.startsWith(VarsEnum.PREFIX)) {
+      return key
+    }
+    key = key.replace(VarsEnum.PREFIX, '')
+    return this.vars[key]
+  }
+
   private processConf(conf: ConfigTypes): void {
     this.dig(conf, (c) => {
       if (c.ref) {
         this.confs[c.ref] = conf
       }
+
+      if (c.vars) {
+        Object.entries(c.vars).forEach(([key, value]) =>
+          this.setVar(key, value)
+        )
+      }
     })
   }
 
-  dig(
+  private dig(
     conf: ConfigTypes,
     action: (conf: ConfigTypes) => void,
     parent?: ConfigTypes

@@ -1,7 +1,8 @@
 import type { ElementHandle } from 'puppeteer'
-import type { PageData, Pattern, TextConfig } from '@models'
+import type { PageData, TextConfig } from '@models'
 import type { ContextService, ProcessorService } from '@services'
 import { Processor } from '@models'
+import { TextUtils } from '@utils'
 
 export class TextProcessor extends Processor {
   constructor(processor: ProcessorService) {
@@ -20,31 +21,18 @@ export class TextProcessor extends Processor {
         return ''
       }
 
-      let result = conf.pattern ? this.pattern(conf.pattern, text) : text
-
-      if (conf.trim && result) {
-        result = result
-          .trim()
-          .split(' ')
-          .filter((x) => x.trim())
-          .join(' ')
-      }
+      const result = TextUtils.process(conf, context, text)
 
       context.events.emit('step', conf, result)
 
       return result
     } catch (e) {
       const error = e as Error
-      if (error.message.includes('failed to find element') && conf.nullable) {
+      if (error.message.includes('failed to find element') && conf.null) {
         return ''
       }
 
       throw e
     }
-  }
-
-  private pattern(pattern: Pattern, text: string): string | undefined {
-    const match = RegExp(pattern.match).exec(text)
-    return match?.[pattern.index]
   }
 }
