@@ -1,12 +1,10 @@
 import type { ElementHandle } from 'puppeteer'
-import type { Config} from '@models'
-import type { ProcessorService } from '@services'
-import type { TextProcessor } from '@processors'
-import { Processor } from '@models'
+import type { Config } from '../models/config.model.js'
+import type { ProcessorService } from '../services/processor.service.js'
+import { Processor } from '../models/processor.model.js'
 
 export class NumberProcessor extends Processor {
-
-  private textProcessor: TextProcessor
+  private textProcessor: Processor
 
   constructor(processor: ProcessorService) {
     super('Number', processor)

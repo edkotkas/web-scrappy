@@ -1,10 +1,9 @@
 import type { ElementHandle } from 'puppeteer'
-import type { AttributeConfig } from '@models'
-import type { ProcessorService } from '@services'
-import { Processor } from '@models'
+import { Processor } from '../models/processor.model.js'
+import type { ProcessorService } from '../services/processor.service.js'
+import type { AttributeConfig } from '../models/config.model.js'
 
 export class AttributeProcessor extends Processor {
-
   constructor(processor: ProcessorService) {
     super('Attribute', processor)
   }
@@ -14,7 +13,7 @@ export class AttributeProcessor extends Processor {
     if (!attr) {
       throw new Error(`'attr' not set`)
     }
-    
+
     try {
       const text = await node.$eval(conf.path, (e, a) => e.getAttribute(a), attr)
       return text ?? ''

@@ -58,4 +58,4 @@ npm test
 
 ## License
 
-ISC © [Eduard Kotkas](https://edkotkas.me)
+ISC © Eduard Kotkas

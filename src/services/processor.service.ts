@@ -1,12 +1,9 @@
-import type { Config, IProcessor, Processor } from '@models'
 import type { Page } from 'puppeteer'
+import type { Config } from '../models/config.model.js'
+import type { Processor, IProcessor } from '../models/processor.model.js'
 
 export class ProcessorService {
-
   processors: Record<string, Processor> = {}
-
-  constructor() {
-  }
 
   register(processor: IProcessor, overwrite?: boolean): void {
     const proc = new processor(this)
@@ -17,12 +14,12 @@ export class ProcessorService {
     this.processors[proc.type] = proc
   }
 
-  get<T = Processor>(name: string): T {
+  get(name: string): Processor {
     if (!(name in this.processors)) {
       throw new Error(`'${name}' processor not registered`)
     }
 
-    return this.processors[name] as T
+    return this.processors[name]
   }
 
   async read(conf: Config, page: Page): Promise<unknown> {

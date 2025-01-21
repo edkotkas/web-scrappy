@@ -1,18 +1,16 @@
-import type { Browser, HTTPResponse, Page, PuppeteerLaunchOptions } from 'puppeteer'
-import { launch } from 'puppeteer'
+import type { Browser, HTTPResponse, Page } from 'puppeteer'
+import { launch, LaunchOptions } from 'puppeteer'
 
 export class PuppyService {
-  private _options: PuppeteerLaunchOptions = {
-    headless: 'new'
+  private _options: LaunchOptions = {
+    headless: true
   }
-  
+
   private pup?: Browser
   private page?: Page
   private content?: HTTPResponse | null
 
-  constructor(
-    private options?: PuppeteerLaunchOptions
-  ) {
+  constructor(private options?: LaunchOptions) {
     this.options ??= this._options
   }
 

@@ -1,10 +1,10 @@
 import type { ElementHandle } from 'puppeteer'
-import type { RecordConfig, RecordValue } from '@models'
-import type { ProcessorService } from '@services'
-import { Processor } from '@models'
+import type { RecordConfig } from '../models/config.model.js'
+import type { RecordValue } from '../models/element.model.js'
+import type { ProcessorService } from '../services/processor.service.js'
+import { Processor } from '../models/processor.model.js'
 
 export class ObjectProcessor extends Processor {
-
   constructor(processor: ProcessorService) {
     super('Object', processor)
   }

@@ -2,8 +2,15 @@
   "src": "./src",
   "clean": true,
   "check-coverage": true,
-  "lines": 0,
-  "branches": 0,
-  "statements": 0,
-  "reporter": ["text", "html", "cobertura"]
+  "lines": 100,
+  "branches": 100,
+  "statements": 100,
+  "reporter": ["text", "html", "cobertura"],
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/models/*.ts",
+    "src/utils/*.ts",
+    "main.ts"
+  ]
 }

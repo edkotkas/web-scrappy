@@ -3,9 +3,9 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-import type { PuppyService } from '@services'
-import type { Config } from '@models'
 import { Scrappy } from './main.js'
+import type { Config } from './models/config.model.js'
+import type { PuppyService } from './services/puppy.service.js'
 
 let pup!: PuppyService
 
@@ -18,26 +18,25 @@ async function start(): Promise<void> {
 
   await puppy.setup()
   const page = await puppy.fetch(url)
-  
+
   const configFile = await fs.readFile(path.join(cwd, conf), 'utf-8')
   const config = JSON.parse(configFile) as Config
   const result = await processor.read(config, page)
 
   if (!out) {
-    return console.log(result)
+    console.log(result)
+
+    return
   }
 
-  await fs.writeFile(
-    path.join(cwd, out),
-    JSON.stringify(result, null, 2)
-  )
+  await fs.writeFile(path.join(cwd, out), JSON.stringify(result, null, 2))
 
   await pup.destroy()
 }
 
-try{
+try {
   await start()
-} catch(e) {
+} catch (e) {
   console.error(e)
 } finally {
   await pup.destroy()
