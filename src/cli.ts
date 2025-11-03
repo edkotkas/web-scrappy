@@ -4,9 +4,9 @@ import { JsonStreamStringify } from 'json-stream-stringify'
 import path from 'node:path'
 import fs from 'node:fs'
 import type { Config } from '@models'
-import { Scrappy } from './main'
-import env from './env'
-import log from './logger'
+import { Scrappy } from './main.js'
+import env from './env.js'
+import log from './logger.js'
 
 function handlePrimitiveCli(args: string[]): string[] {
   if (args.includes('--verbose')) {
@@ -55,8 +55,12 @@ void (async function (): Promise<void> {
 
   const ws = fs.createWriteStream(out)
   const jss = new JsonStreamStringify(result)
-  jss.once('error', (err: any) => {
-    throw new Error(`Failed to write output: ${err.message}`)
+  jss.once('error', (err: unknown) => {
+    throw new Error(
+      `Failed to write output: ${
+        err instanceof Error ? err.message : String(err)
+      }`
+    )
   })
 
   log('Writing to', out)

@@ -88,7 +88,7 @@ export class ContextService {
     conf: ConfigTypes,
     action: (conf: ConfigTypes) => void,
     parent?: ConfigTypes
-  ) {
+  ): void {
     if (parent) {
       conf.parent = parent
     }

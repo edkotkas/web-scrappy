@@ -3,6 +3,7 @@ import type { AttributeConfig, PageData } from '@models'
 import type { ContextService, ProcessorService } from '@services'
 import { Processor } from '@models'
 import { TextUtils } from '@utils'
+import log from '../logger.js'
 
 export class AttributeProcessor extends Processor {
   constructor(processor: ProcessorService) {
@@ -20,6 +21,8 @@ export class AttributeProcessor extends Processor {
       throw new Error(`'attr' not set`)
     }
 
+    log('attr', attr)
+
     try {
       const text = await node.$eval(
         conf.path,
@@ -36,8 +39,12 @@ export class AttributeProcessor extends Processor {
           return
         }
 
-        throw new Error(`failed to get attribute '${attr}' in '${conf.path}'`)
+        throw new Error(
+          `failed to get attribute '${attr.join(', ')}' in '${conf.path}'`
+        )
       }
+
+      log('text', text)
 
       const result = TextUtils.process(conf, context, text)
       if (!result) {
@@ -45,8 +52,12 @@ export class AttributeProcessor extends Processor {
           return
         }
 
-        throw new Error(`failed to process value from attribute '${attr}'`)
+        throw new Error(
+          `failed to process value from attribute '${attr.join(', ')}'`
+        )
       }
+
+      log('result', result)
 
       context.events.emit('step', conf, result)
 

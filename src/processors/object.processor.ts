@@ -16,6 +16,10 @@ export class ObjectProcessor extends Processor {
   ): Promise<RecordValue> {
     const result: RecordValue = {}
 
+    if (Object.keys(conf.props).length === 0) {
+      throw new Error(`'props' not set`)
+    }
+
     for (const prop of conf.props) {
       const proc = this.processor.get(prop.type)
       result[prop.key] = await proc.process(prop, node, data, context)

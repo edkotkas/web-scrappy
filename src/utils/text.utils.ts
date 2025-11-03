@@ -1,6 +1,8 @@
 import type { Pattern, TextConfig, ValueType } from '@models'
-import { ContextService } from '@services'
+import type { ContextService } from '@services'
+import log from '../logger.js'
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export abstract class TextUtils {
   constructor() {}
 
@@ -9,10 +11,11 @@ export abstract class TextUtils {
     context: ContextService,
     text: string
   ): string | undefined {
-    let result = text
+    let result: string | undefined = text
 
     if (conf.pattern) {
-      result = TextUtils.pattern(conf.pattern, text) ?? result
+      result = TextUtils.pattern(conf.pattern, text)
+      log('pattern', result)
     }
 
     if (!result) {
@@ -25,16 +28,19 @@ export abstract class TextUtils {
         .split(' ')
         .filter((x) => x.trim())
         .join(' ')
+      log('trim', result)
     }
 
     if (conf.prepend) {
       const value = TextUtils.getVar(conf.prepend, context)
-      result = value + result
+      result = `${value?.toString() ?? ''}${result}`
+      log('prepend', result)
     }
 
     if (conf.append) {
       const value = TextUtils.getVar(conf.append, context)
-      result = result + value
+      result = `${result}${value?.toString() ?? ''}`
+      log('append', result)
     }
 
     return result
@@ -42,6 +48,7 @@ export abstract class TextUtils {
 
   static pattern(pattern: Pattern, text: string): string | undefined {
     const match = RegExp(pattern.match).exec(text)
+    log('match', match)
     return match?.[pattern.index]
   }
 
@@ -50,6 +57,8 @@ export abstract class TextUtils {
     if (!value) {
       return
     }
+
+    log('getVar', value)
 
     return value
   }

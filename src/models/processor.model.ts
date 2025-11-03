@@ -1,7 +1,7 @@
 import type { ElementHandle } from 'puppeteer'
 import type { Config, ConfigTypes, PageData, Values } from '@models'
 import type { ContextService, ProcessorService } from '@services'
-import EventEmitter from 'node:events'
+import type EventEmitter from 'node:events'
 
 export type EventKeys = 'step' | 'step-result'
 export type ContextListener = (

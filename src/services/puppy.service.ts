@@ -1,41 +1,45 @@
 import { VarsEnum, type PageData, type ScrappyOptions } from '@models'
 import type { Browser, HTTPResponse, PuppeteerLaunchOptions } from 'puppeteer'
 import type { PuppeteerExtraPlugin } from 'puppeteer-extra'
-import puppeteer from 'puppeteer-extra'
+import { PuppeteerExtra } from 'puppeteer-extra'
 
-import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker'
+import { PuppeteerExtraPluginAdblocker } from 'puppeteer-extra-plugin-adblocker'
 import StealthPlugin from 'puppeteer-extra-plugin-stealth'
-import { ContextService } from './context.service'
+import type { ContextService } from './context.service.js'
 
 export class PuppyService {
   private options: PuppeteerLaunchOptions = {
-    headless: 'new'
+    headless: 'new',
+    timeout: 0,
+    protocolTimeout: 0
   }
 
   private browser?: Browser
   private readonly context: ContextService
+  private readonly puppeteer: PuppeteerExtra
 
   constructor(context: ContextService, options?: ScrappyOptions) {
+    this.puppeteer = new PuppeteerExtra()
     this.context = context
     this.options = Object.assign({}, this.options, options?.pup)
     this.setDefaultPlugins(options)
   }
 
   private setDefaultPlugins(options?: ScrappyOptions): void {
-    puppeteer.use(StealthPlugin())
+    this.puppeteer.use(StealthPlugin())
     if (options?.adblock) {
-      puppeteer.use(AdblockerPlugin())
+      this.puppeteer.use(PuppeteerExtraPluginAdblocker())
     }
   }
 
   usePlugins(...plugins: PuppeteerExtraPlugin[]): void {
     plugins.forEach((p) => {
-      puppeteer.use(p)
+      this.puppeteer.use(p)
     })
   }
 
   async init(): Promise<void> {
-    this.browser ??= await puppeteer.launch(this.options)
+    this.browser ??= await this.puppeteer.launch(this.options)
   }
 
   async fetch(url: string): Promise<PageData> {
@@ -54,11 +58,16 @@ export class PuppyService {
     })
 
     const response = await page.goto(url, {
-      waitUntil: 'networkidle0'
+      waitUntil: 'networkidle0',
+      timeout: 0
     })
 
-    if (!response || !response.ok()) {
-      throw new Error(`failed to fetch '${url}'`)
+    if (!response?.ok()) {
+      throw new Error(
+        `failed to fetch '${url}' with status ${
+          response?.status() ?? 'unknown'
+        }`
+      )
     }
 
     const data = {

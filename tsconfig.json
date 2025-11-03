@@ -2,9 +2,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "dist",
-    "moduleResolution": "Node",
-    "target": "ES2022",
-    "module": "CommonJS",
+    "moduleResolution": "nodenext",
+    "target": "esnext",
+    "module": "nodenext",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "emitDecoratorMetadata": true,

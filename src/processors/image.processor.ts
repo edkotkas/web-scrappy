@@ -37,6 +37,8 @@ export class ImageProcessor extends Processor {
         data,
         context
       )
+
+      console.log('text', text)
       if (!text) {
         if (conf.null) {
           return
@@ -54,16 +56,27 @@ export class ImageProcessor extends Processor {
         throw new Error(`failed to process value from '${attrConf.attr}'`)
       }
 
-      const url = new URL(value)
+      console.log('value', value)
 
-      const res = this.getResponse(data.res, url.pathname)
+      let url = undefined
+      try {
+        url = new URL(value).pathname
+      } catch (e) {
+        // throw new Error(`failed to parse url from '${value}'`)
+        url = value
+      }
+
+      console.log('data', data)
+
+      const res = this.getResponse(data.res, url)
+      console.log('res found', res?.url())
       const buffer = await res?.buffer()
       if (!buffer) {
         if (conf.null) {
           return
         }
 
-        throw new Error(`failed to get buffer for '${url.pathname}'`)
+        throw new Error(`failed to get buffer for '${url}'`)
       }
 
       const result = { url: value, buffer }
@@ -85,6 +98,10 @@ export class ImageProcessor extends Processor {
     res: HTTPResponse[],
     url: string
   ): HTTPResponse | undefined {
+    console.log(
+      'res',
+      res.map((r) => r.url())
+    )
     return res.find((r) => r.url().includes(url))
   }
 }

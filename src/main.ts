@@ -1,4 +1,4 @@
-import env from './env'
+import env from './env.js'
 import type {
   ConfigTypes,
   ContextEvents,
@@ -13,7 +13,8 @@ import {
   ObjectProcessor,
   ReferenceProcessor,
   TextProcessor,
-  FollowProcessor
+  FollowProcessor,
+  RawProcessor
 } from '@processors'
 import { ProcessorService, PuppyService, ContextService } from '@services'
 
@@ -29,7 +30,8 @@ export class Scrappy {
     AttributeProcessor,
     ImageProcessor,
     FollowProcessor,
-    ReferenceProcessor
+    ReferenceProcessor,
+    RawProcessor
   ]
 
   constructor(opts?: ScrappyOptions) {
@@ -53,7 +55,7 @@ export class Scrappy {
   }
 
   async fetch<T = Values>(url: string): Promise<T> {
-    return this.processor.read(url) as T
+    return this.processor.read(url) as Promise<T>
   }
 
   async destroy(): Promise<void> {

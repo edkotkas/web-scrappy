@@ -5,8 +5,8 @@ import type {
   Processor,
   Values
 } from '@models'
-import type { PuppyService } from './puppy.service'
-import type { ContextService } from './context.service'
+import type { PuppyService } from './puppy.service.js'
+import type { ContextService } from './context.service.js'
 
 export class ProcessorService {
   processors: Record<string, Processor> = {}

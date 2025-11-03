@@ -1,2 +1,2 @@
-export * from './src/main'
-export * from './src/models'
+export * from './src/main.js'
+export * from './src/models/index.js'

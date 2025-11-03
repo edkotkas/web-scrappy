@@ -11,6 +11,7 @@ export enum VarsEnum {
   SEARCH = 'SEARCH'
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export interface RecordValue {
   [key: string]: Values
 }

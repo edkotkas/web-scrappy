@@ -1,4 +1,4 @@
-import { ValueType } from './element.model'
+import type { ValueType } from './element.model.js'
 
 export interface Config {
   type: string
