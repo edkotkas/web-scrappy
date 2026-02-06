@@ -1,53 +1,32 @@
-import type { ElementHandle } from 'puppeteer'
-import type { ListConfig, PageData, Values } from '@models'
-import type { ContextService, ProcessorService } from '@services'
-import { Processor } from '@models'
+import type { Processor, ProcessorContext } from './processor.registry.js'
 
-export class ListProcessor extends Processor {
-  constructor(processor: ProcessorService) {
-    super('List', processor)
-  }
+export const createListProcessor = (): Processor => ({
+  async process(context: ProcessorContext): Promise<unknown[]> {
+    const { element, config, browser, registry } = context
 
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
-
-  async process(
-    conf: ListConfig,
-    node: ElementHandle,
-    data: PageData,
-    context: ContextService
-  ): Promise<Values[]> {
-    const proc = this.processor.get(conf.value.type)
-    const nodes = await node.$$(conf.path)
-    let procs = nodes.map((node) =>
-      proc.process(conf.value, node, data, context)
-    )
-
-    // TODO: actual sorting
-    if (conf.order?.direction === 'reverse') {
-      procs = procs.reverse()
+    if (!config.config) {
+      throw new Error('config is required for list')
     }
 
-    if (!conf.sequence) {
-      const result = await Promise.all(procs)
-      context.events.emit('step', conf, result)
-
-      return result
+    if (!config.path) {
+      throw new Error('path is required for list')
     }
 
-    const results: Values[] = []
-    for (const node of procs) {
-      if (conf.delay && conf.delay > 0) {
-        await this.delay(conf.delay)
-      }
+    const nodes = await browser.extractNodes(element, config.path)
+    const results: unknown[] = []
 
-      const res = await node
-      results.push(res)
+    for (const node of nodes) {
+      const processor = registry.get(config.config.type)
+
+      const result = await processor.process({
+        ...context,
+        element: node,
+        config: config.config
+      })
+
+      results.push(result)
     }
-
-    context.events.emit('step', conf, results)
 
     return results
   }
-}
+})

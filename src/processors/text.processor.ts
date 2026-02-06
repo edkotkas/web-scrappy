@@ -1,38 +1,22 @@
-import type { ElementHandle } from 'puppeteer'
-import type { PageData, TextConfig } from '@models'
-import type { ContextService, ProcessorService } from '@services'
-import { Processor } from '@models'
-import { TextUtils } from '@utils'
+import { ensureValue, formatText } from './helpers/index.js'
+import type { Processor } from './processor.registry.js'
 
-export class TextProcessor extends Processor {
-  constructor(processor: ProcessorService) {
-    super('Text', processor)
-  }
-
-  async process(
-    conf: TextConfig,
-    node: ElementHandle,
-    _: PageData,
-    context: ContextService
-  ): Promise<string | undefined> {
-    try {
-      const text = await node.$eval(conf.path, (e) => e.textContent)
-      if (!text) {
-        return ''
-      }
-
-      const result = TextUtils.process(conf, context, text)
-
-      context.events.emit('step', conf, result)
-
-      return result
-    } catch (e) {
-      const error = e as Error
-      if (error.message.includes('failed to find element') && conf.null) {
-        return ''
-      }
-
-      throw e
+export const createTextProcessor = (): Processor => ({
+  async process({ config, browser, element, vars }): Promise<string | null> {
+    if (!config.path) {
+      throw new Error('path is required for text')
     }
+
+    const text = ensureValue(
+      await browser.extractText(element, config),
+      config,
+      `No text found using path: ${config.path ?? 'element textContent'}`
+    )
+
+    if (text === null) {
+      return null
+    }
+
+    return formatText(config, text, vars)
   }
-}
+})

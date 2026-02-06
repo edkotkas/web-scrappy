@@ -1,64 +1,51 @@
-import env from './env.js'
-import type {
-  ConfigTypes,
-  ContextEvents,
-  ScrappyOptions,
-  Values
-} from '@models'
 import {
-  AttributeProcessor,
-  ImageProcessor,
-  ListProcessor,
-  NumberProcessor,
-  ObjectProcessor,
-  ReferenceProcessor,
-  TextProcessor,
-  FollowProcessor,
-  RawProcessor
+  type ProcessorRegistry,
+  createAttributeProcessor,
+  createFollowProcessor,
+  createHtmlProcessor,
+  createImageProcessor,
+  createListProcessor,
+  createNumberProcessor,
+  createObjectProcessor,
+  createRegistry,
+  createTextProcessor
 } from '@processors'
-import { ProcessorService, PuppyService, ContextService } from '@services'
+import { PlaywrightAdapter } from './adapters/playwright/playwright.adapter.js'
+import { createVariableContainer } from './context/vars.service.js'
+import { ScraperEngine } from './engine/scraper.engine.js'
+import type { BrowserAdapter } from './interfaces/browser-adapter.interface.js'
 
-export class Scrappy {
-  private readonly processor: ProcessorService
-  private readonly context: ContextService
+export interface ScraperContext {
+  registry: ProcessorRegistry
+  engine: ScraperEngine
+}
 
-  private processors = [
-    TextProcessor,
-    NumberProcessor,
-    ObjectProcessor,
-    ListProcessor,
-    AttributeProcessor,
-    ImageProcessor,
-    FollowProcessor,
-    ReferenceProcessor,
-    RawProcessor
-  ]
+export async function createScraper(
+  adapter?: BrowserAdapter
+): Promise<ScraperContext> {
+  const browser = adapter ?? new PlaywrightAdapter()
 
-  constructor(opts?: ScrappyOptions) {
-    this.context = new ContextService()
-
-    env.log = opts?.log ?? false
-    env.adblock = opts?.adblock ?? false
-
-    const puppy = new PuppyService(this.context, opts)
-
-    this.processor = new ProcessorService(puppy)
-    this.processors.forEach((proc) => {
-      this.processor.register(proc)
-    })
+  if ('initialize' in browser) {
+    await browser.initialize?.()
   }
 
-  async init(conf: ConfigTypes | ConfigTypes[]): Promise<ContextEvents> {
-    this.context.init(conf)
-    await this.processor.init(this.context)
-    return this.context.events
-  }
+  const registry = createRegistry()
+  const vars = createVariableContainer()
 
-  async fetch<T = Values>(url: string): Promise<T> {
-    return this.processor.read(url) as Promise<T>
-  }
+  // TODO: defer initialization of processors until they're needed, to avoid unnecessary imports and setup
+  registry.set('text', createTextProcessor())
+  registry.set('attribute', createAttributeProcessor())
+  registry.set('html', createHtmlProcessor())
+  registry.set('number', createNumberProcessor())
+  registry.set('list', createListProcessor())
+  registry.set('object', createObjectProcessor())
+  registry.set('image', createImageProcessor())
+  registry.set('follow', createFollowProcessor())
 
-  async destroy(): Promise<void> {
-    return this.processor.pup.destroy()
+  const engine = new ScraperEngine(browser, registry, vars)
+
+  return {
+    registry,
+    engine
   }
 }

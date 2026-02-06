@@ -1,74 +1,24 @@
-import type { ElementHandle } from 'puppeteer'
-import type { AttributeConfig, PageData } from '@models'
-import type { ContextService, ProcessorService } from '@services'
-import { Processor } from '@models'
-import { TextUtils } from '@utils'
-import log from '../logger.js'
+import { ensureValue } from './helpers/ensure-value.js'
+import { formatText } from './helpers/formatter.js'
+import type { Processor } from './processor.registry.js'
 
-export class AttributeProcessor extends Processor {
-  constructor(processor: ProcessorService) {
-    super('Attribute', processor)
-  }
+export const createAttributeProcessor = (): Processor => ({
+  async process({
+    config,
+    browser,
+    element,
+    vars
+  }): Promise<string | string[] | null> {
+    const attribute = ensureValue(
+      await browser.extractAttribute(element, config),
+      config,
+      `no attribute "${config.attribute ?? ''}" found using path: ${config.path ?? 'element'}`
+    )
 
-  async process(
-    conf: AttributeConfig,
-    node: ElementHandle,
-    _: PageData,
-    context: ContextService
-  ): Promise<string | undefined> {
-    const attr = conf.attr
-    if (!attr) {
-      throw new Error(`'attr' not set`)
+    if (attribute === null) {
+      return null
     }
 
-    log('attr', attr)
-
-    try {
-      const text = await node.$eval(
-        conf.path,
-        (e, a) => {
-          const attrs = a.map((x) => e.getAttribute(x))
-
-          return attrs.find((x) => x)
-        },
-        attr
-      )
-
-      if (!text) {
-        if (conf.null) {
-          return
-        }
-
-        throw new Error(
-          `failed to get attribute '${attr.join(', ')}' in '${conf.path}'`
-        )
-      }
-
-      log('text', text)
-
-      const result = TextUtils.process(conf, context, text)
-      if (!result) {
-        if (conf.null) {
-          return
-        }
-
-        throw new Error(
-          `failed to process value from attribute '${attr.join(', ')}'`
-        )
-      }
-
-      log('result', result)
-
-      context.events.emit('step', conf, result)
-
-      return result
-    } catch (e) {
-      const error = e as Error
-      if (error.message.includes('failed to find element') && conf.null) {
-        return
-      }
-
-      throw e
-    }
+    return formatText(config, attribute, vars)
   }
-}
+})

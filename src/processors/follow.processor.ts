@@ -1,41 +1,54 @@
-import type { ElementHandle } from 'puppeteer'
-import type { FollowConfig, PageData, Values } from '@models'
-import type { ContextService, ProcessorService } from '@services'
-import type { AttributeProcessor } from '@processors'
-import { Processor } from '@models'
+import { ensureValue } from './helpers/index.js'
+import type { Processor, ProcessorContext } from './processor.registry.js'
 
-export class FollowProcessor extends Processor {
-  private attrProcessor: AttributeProcessor
+export const createFollowProcessor = (): Processor => ({
+  async process(context: ProcessorContext): Promise<unknown> {
+    const { page, element, config, vars, browser, registry } = context
 
-  constructor(processor: ProcessorService) {
-    super('Follow', processor)
-    this.attrProcessor = this.processor.get('Attribute')
-  }
-
-  async process(
-    conf: FollowConfig,
-    node: ElementHandle,
-    data: PageData,
-    context: ContextService
-  ): Promise<Values> {
-    try {
-      const url = await this.attrProcessor.process(conf, node, data, context)
-      if (!url) {
-        return
-      }
-
-      const result = await this.processor.follow(url, conf.conf)
-
-      context.events.emit('step', conf, result)
-
-      return result
-    } catch (e) {
-      const error = e as Error
-      if (error.message.includes('failed to find element') && conf.null) {
-        return
-      }
-
-      throw e
+    if (!config.path) {
+      throw new Error('path is required for follow')
     }
+
+    if (!config.config) {
+      throw new Error('config is required for follow')
+    }
+
+    if (!config.attribute) {
+      throw new Error('attribute is required for follow')
+    }
+
+    const url = ensureValue(
+      await browser.extractAttribute(element, config),
+      config,
+      `no attribute "${config.attribute ?? ''}" found for follow`
+    )
+
+    if (url === null) {
+      return null
+    }
+
+    const baseUrl = page.url()
+    const absoluteUrl = new URL(url, baseUrl).href
+
+    await browser.navigateToPage(page, {
+      url: absoluteUrl,
+      config: config.config
+    })
+
+    const processor = registry.get(config.config.type)
+    const savedVars = vars.clone()
+
+    vars.setupPage(page)
+    vars.setFromConfig(config.config.vars)
+
+    const result = await processor.process({
+      ...context,
+      element,
+      config: config.config
+    })
+
+    vars.restorePage(savedVars)
+
+    return result
   }
-}
+})

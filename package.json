@@ -1,48 +1,57 @@
 {
-  "name": "web-scrappy",
+  "name": "ayumi",
   "version": "0.1.0",
   "description": "Yet another web scraper.",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/public.js",
   "files": [
     "dist"
   ],
-  "bin": {
-    "scrappy": "dist/src/cli.js"
-  },
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "npx --node-options='--experimental-strip-types' eslint --flag unstable_native_nodejs_ts_config \"src/**/*.ts\" --fix",
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
     "start": "tsx src/cli.ts",
     "prebuild": "node ./node_modules/del-cli/cli.js dist/",
-    "build": "tsc --project tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-    "test": "tsx tests",
-    "test:watch": "tsx --watch tests",
-    "test:coverage": "c8 npm run test"
+    "sample": "tsx ./sample.ts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
-    "@types/jasmine": "^4.3.5",
-    "@types/node": "^20.5.6",
-    "@typescript-eslint/eslint-plugin": "^5.59.9",
-    "c8": "^8.0.1",
-    "del-cli": "^5.0.1",
-    "eslint": "^8.48.0",
-    "eslint-config-standard-with-typescript": "^35.0.0",
-    "eslint-plugin-import": "^2.28.1",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "jasmine": "^5.1.0",
-    "tsc-alias": "^1.8.7",
-    "tsx": "^3.12.7",
-    "typescript": "^5.2.2"
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
+    "@stryker-mutator/core": "^9.5.1",
+    "@stryker-mutator/jasmine-runner": "^9.5.1",
+    "@stryker-mutator/typescript-checker": "^9.5.1",
+    "@types/jasmine": "^6.0.0",
+    "@types/node": "^25.2.1",
+    "c8": "^10.1.3",
+    "del-cli": "^7.0.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.3.0",
+    "jasmine": "^6.0.0",
+    "jest": "^30.2.0",
+    "jiti": "^2.6.1",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0"
   },
   "dependencies": {
-    "json-stream-stringify": "^3.1.0",
-    "puppeteer": "^21.1.0",
-    "puppeteer-autoscroll-down": "^2.0.0",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-adblocker": "^2.13.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "@ghostery/adblocker-puppeteer": "^2.13.4",
+    "cheerio": "^1.2.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "json-stream-stringify": "^3.1.6",
+    "patchright": "^1.57.0",
+    "playwright": "^1.58.1",
+    "puppeteer": "^24.37.1",
+    "puppeteer-autoscroll-down": "^2.0.1",
+    "reflect-metadata": "^0.2.2",
+    "xmldom": "^0.6.0",
+    "xpath": "^0.0.34"
   }
 }

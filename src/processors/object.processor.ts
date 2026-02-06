@@ -1,32 +1,28 @@
-import type { ElementHandle } from 'puppeteer'
-import type { PageData, RecordConfig, RecordValue } from '@models'
-import type { ContextService, ProcessorService } from '@services'
-import { Processor } from '@models'
+import type { Processor, ProcessorContext } from './processor.registry.js'
 
-export class ObjectProcessor extends Processor {
-  constructor(processor: ProcessorService) {
-    super('Object', processor)
-  }
+export const createObjectProcessor = (): Processor => ({
+  async process(context: ProcessorContext): Promise<Record<string, unknown>> {
+    const { config, registry } = context
 
-  async process(
-    conf: RecordConfig,
-    node: ElementHandle,
-    data: PageData,
-    context: ContextService
-  ): Promise<RecordValue> {
-    const result: RecordValue = {}
-
-    if (Object.keys(conf.props).length === 0) {
-      throw new Error(`'props' not set`)
+    if (!config.props || config.props.length === 0) {
+      throw new Error(
+        'Object processor requires a "props" array with at least one property'
+      )
     }
 
-    for (const prop of conf.props) {
-      const proc = this.processor.get(prop.type)
-      result[prop.key] = await proc.process(prop, node, data, context)
-    }
+    const result: Record<string, unknown> = {}
 
-    context.events.emit('step', conf, result)
+    for (const prop of config.props) {
+      if (!prop.key) {
+        throw new Error('Each property in "props" must have a "key" field')
+      }
+
+      const processor = registry.get(prop.type)
+      const value = await processor.process({ ...context, config: prop })
+
+      result[prop.key] = value
+    }
 
     return result
   }
-}
+})
