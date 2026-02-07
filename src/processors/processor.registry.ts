@@ -21,16 +21,33 @@ export interface Processor {
 export interface ProcessorRegistry {
   set(type: string, processor: Processor): void
   get(type: string): Processor
+  defer(type: string, factory: () => Processor): void
 }
 
 export function createRegistry(): ProcessorRegistry {
   const processors = new Map<string, Processor>()
+  const deferred = new Map<string, () => Processor>()
 
   function set(type: string, processor: Processor): void {
     processors.set(type, processor)
   }
 
   function get(type: string): Processor {
+    if (deferred.has(type)) {
+      const factory = deferred.get(type)
+
+      if (!factory) {
+        throw new Error(`deferred factory not found for type: ${type}`)
+      }
+
+      const processor = factory()
+
+      processors.set(type, processor)
+      deferred.delete(type)
+
+      return processor
+    }
+
     const processor = processors.get(type)
 
     if (!processor) {
@@ -40,26 +57,17 @@ export function createRegistry(): ProcessorRegistry {
     return processor
   }
 
+  function defer(type: string, factory: () => Processor): void {
+    if (deferred.has(type)) {
+      throw new Error(`processor already deferred for type: ${type}`)
+    }
+
+    deferred.set(type, factory)
+  }
+
   return {
     set,
-    get
+    get,
+    defer
   }
 }
-
-// export class ProcessorRegistry {
-//   private readonly processors = new Map<string, Processor>()
-
-//   set(type: string, processor: Processor): void {
-//     this.processors.set(type, processor)
-//   }
-
-//   get(type: string): Processor {
-//     const processor = this.processors.get(type)
-
-//     if (!processor) {
-//       throw new Error(`Processor not found for type: ${type}`)
-//     }
-
-//     return processor
-//   }
-// }

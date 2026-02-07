@@ -91,12 +91,6 @@ export class PlaywrightAdapter implements BrowserAdapter<
       timeout
     })
 
-    // await page.waitForLoadState('networkidle', {
-    //   timeout
-    // })
-
-    await page.screenshot({ path: 'pw-screenshot.png', fullPage: true })
-
     if (!response?.ok()) {
       throw new Error(
         `Failed to load page: ${url} - status: ${response ? response.status().toString() : 'no response'}`

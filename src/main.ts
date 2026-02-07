@@ -32,15 +32,14 @@ export async function createScraper(
   const registry = createRegistry()
   const vars = createVariableContainer()
 
-  // TODO: defer initialization of processors until they're needed, to avoid unnecessary imports and setup
-  registry.set('text', createTextProcessor())
-  registry.set('attribute', createAttributeProcessor())
-  registry.set('html', createHtmlProcessor())
-  registry.set('number', createNumberProcessor())
-  registry.set('list', createListProcessor())
-  registry.set('object', createObjectProcessor())
-  registry.set('image', createImageProcessor())
-  registry.set('follow', createFollowProcessor())
+  registry.defer('text', createTextProcessor)
+  registry.defer('attribute', createAttributeProcessor)
+  registry.defer('html', createHtmlProcessor)
+  registry.defer('number', createNumberProcessor)
+  registry.defer('list', createListProcessor)
+  registry.defer('object', createObjectProcessor)
+  registry.defer('image', createImageProcessor)
+  registry.defer('follow', createFollowProcessor)
 
   const engine = new ScraperEngine(browser, registry, vars)
 
