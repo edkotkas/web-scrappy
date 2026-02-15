@@ -1,14 +1,22 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "target": "ESNext",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "experimentalDecorators": true,
     "strict": true,
-    "types": ["node", "jasmine"]
+    "outDir": "dist",
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["esnext", "DOM"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["node_modules"]
+  "exclude": ["./node_modules", "./dist"]
 }

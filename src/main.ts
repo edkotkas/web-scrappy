@@ -1,25 +1,52 @@
-import type { ScrappyConfig } from './models/scrappy.model.js'
-import { AttributeProcessor } from './processors/attribute.processor.js'
-import { ListProcessor } from './processors/list.processor.js'
-import { NumberProcessor } from './processors/number.processor.js'
-import { ObjectProcessor } from './processors/object.processor.js'
-import { TextProcessor } from './processors/text.processor.js'
-import { ProcessorService } from './services/processor.service.js'
-import { PuppyService } from './services/puppy.service.js'
+import { PlaywrightAdapter } from './adapters/playwright/playwright.adapter.js'
+import { createScraper, type ScrapeFunc } from './engine/scraper.engine.js'
+import type { BrowserAdapter } from './interfaces/browser-adapter.interface.js'
+import {
+  createAttributeProcessor,
+  createFollowProcessor,
+  createHtmlProcessor,
+  createImageProcessor,
+  createListProcessor,
+  createNumberProcessor,
+  createObjectProcessor,
+  createRegistry,
+  createTextProcessor,
+  type ProcessorRegistry
+} from './processors/index.js'
+import { createVariableContainer } from './utils/variable.js'
 
-export class Scrappy {
-  processor: ProcessorService
-  puppy: PuppyService
+export interface ScraperContext {
+  registry: ProcessorRegistry
+  scrape: ScrapeFunc
+}
 
-  private processors = [TextProcessor, NumberProcessor, ObjectProcessor, ListProcessor, AttributeProcessor]
+export interface ScraperOptions {
+  adapter?: BrowserAdapter
+}
 
-  constructor(opts?: ScrappyConfig) {
-    this.processor = new ProcessorService()
+export async function createScraperEngine({ adapter }: ScraperOptions = {}): Promise<ScraperContext> {
+  const browser = adapter ?? new PlaywrightAdapter()
 
-    this.processors.forEach((proc) => {
-      this.processor.register(proc)
-    })
+  if ('initialize' in browser) {
+    await browser.initialize?.()
+  }
 
-    this.puppy = new PuppyService(opts?.pupConfig)
+  const registry = createRegistry()
+  const vars = createVariableContainer()
+
+  registry.defer('text', createTextProcessor)
+  registry.defer('attribute', createAttributeProcessor)
+  registry.defer('html', createHtmlProcessor)
+  registry.defer('number', createNumberProcessor)
+  registry.defer('list', createListProcessor)
+  registry.defer('object', createObjectProcessor)
+  registry.defer('image', createImageProcessor)
+  registry.defer('follow', createFollowProcessor)
+
+  const scrape = createScraper(browser, registry, vars)
+
+  return {
+    registry,
+    scrape
   }
 }

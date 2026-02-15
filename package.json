@@ -1,29 +1,20 @@
 {
-  "name": "web-scrappy",
+  "name": "ayumi",
   "version": "0.1.0",
-  "type": "module",
   "description": "Yet another web scraper.",
-  "main": "dist/main.js",
+  "type": "module",
+  "main": "dist/public.js",
   "files": [
-    "dist/**/**",
-    "!**/*.spec.*",
-    "!**/*.tsbuildinfo",
-    "LICENSE",
-    "README.md"
+    "dist"
   ],
-  "bin": {
-    "scrappy": "dist/cli.js"
-  },
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "npx --node-options='--experimental-strip-types' eslint --flag unstable_native_nodejs_ts_config \"src/**/*.ts\" --fix",
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
     "start": "tsx src/cli.ts",
-    "prebuild": "del-cli dist/",
-    "build": "tsc --build tsconfig.build.json",
-    "test": "tsx --tsconfig tsconfig.test.json test.ts",
-    "test:watch": "npm run test -- --watch",
-    "test:coverage": "c8 --all npm run test",
-    "test:mutation": "stryker run",
-    "lint": "eslint .",
-    "format": "prettier --config .prettierrc --ignore-unknown --write"
+    "prebuild": "node ./node_modules/del-cli/cli.js dist/",
+    "sample": "tsx ./sample.ts"
   },
   "author": "Eduard Kotkas",
   "license": "ISC",
@@ -36,26 +27,39 @@
   },
   "homepage": "https://github.com/edkotkas/web-scrappy#readme",
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
-    "@eslint/js": "^9.18.0",
-    "@stryker-mutator/core": "^8.7.1",
-    "@stryker-mutator/jasmine-runner": "^8.7.1",
-    "@stryker-mutator/typescript-checker": "^8.7.1",
-    "@types/eslint__js": "^8.42.3",
-    "@types/jasmine": "^5.1.5",
-    "@types/node": "^22.10.7",
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
+    "@stryker-mutator/core": "^9.5.1",
+    "@stryker-mutator/jasmine-runner": "^9.5.1",
+    "@stryker-mutator/typescript-checker": "^9.5.1",
+    "@types/jasmine": "^6.0.0",
+    "@types/node": "^25.2.1",
     "c8": "^10.1.3",
-    "del-cli": "^6.0.0",
-    "eslint": "^9.18.0",
-    "globals": "^15.14.0",
-    "http-request-mock": "^2.0.2",
-    "jasmine": "^5.5.0",
-    "prettier": "^3.4.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "del-cli": "^7.0.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.3.0",
+    "jasmine": "^6.0.0",
+    "jest": "^30.2.0",
+    "jiti": "^2.6.1",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0"
   },
   "dependencies": {
-    "puppeteer": "^24.1.0"
+    "@ghostery/adblocker-puppeteer": "^2.13.4",
+    "cheerio": "^1.2.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "json-stream-stringify": "^3.1.6",
+    "patchright": "^1.57.0",
+    "playwright": "^1.58.1",
+    "puppeteer": "^24.37.1",
+    "puppeteer-autoscroll-down": "^2.0.1",
+    "reflect-metadata": "^0.2.2",
+    "xmldom": "^0.6.0",
+    "xpath": "^0.0.34"
   }
 }

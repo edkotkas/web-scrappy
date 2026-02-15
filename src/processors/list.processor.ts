@@ -1,20 +1,32 @@
-import type { ElementHandle } from 'puppeteer'
-import type { ListConfig } from '../models/config.model.js'
-import type { ListValue } from '../models/element.model.js'
-import { Processor } from '../models/processor.model.js'
-import type { ProcessorService } from '../services/processor.service.js'
+import type { Processor, ProcessorContext } from './processor.registry.js'
 
-export class ListProcessor extends Processor {
-  constructor(processor: ProcessorService) {
-    super('List', processor)
+export const createListProcessor = (): Processor => ({
+  async process(context: ProcessorContext): Promise<unknown[]> {
+    const { element, config, browser, registry } = context
+
+    if (!config.config) {
+      throw new Error('config is required for list')
+    }
+
+    if (!config.path) {
+      throw new Error('path is required for list')
+    }
+
+    const nodes = await browser.extractNodes(element, config.path)
+    const results: unknown[] = []
+
+    for (const node of nodes) {
+      const processor = registry.get(config.config.type)
+
+      const result = await processor.process({
+        ...context,
+        element: node,
+        config: config.config
+      })
+
+      results.push(result)
+    }
+
+    return results
   }
-
-  async process(conf: ListConfig, node: ElementHandle): Promise<ListValue> {
-    const proc = this.processor.get(conf.value.type)
-    const nodes = await node.$$(conf.path)
-    const processedNodes = nodes.map((el) => proc.process(conf.value, el))
-    const list = await Promise.all(processedNodes)
-
-    return list as ListValue
-  }
-}
+})

@@ -1,20 +1,28 @@
-import type { ElementHandle } from 'puppeteer'
-import type { Config } from '../models/config.model.js'
-import type { ProcessorService } from '../services/processor.service.js'
-import { Processor } from '../models/processor.model.js'
+import { ensureValue, formatText } from './helpers/index.js'
+import type { Processor } from './processor.registry.js'
 
-export class NumberProcessor extends Processor {
-  private textProcessor: Processor
+export const createNumberProcessor = (): Processor => ({
+  async process({ element, browser, config, vars }): Promise<number | null> {
+    if (!config.path) {
+      throw new Error('path is required for number')
+    }
 
-  constructor(processor: ProcessorService) {
-    super('Number', processor)
+    const text = ensureValue(
+      await browser.extractText(element, config),
+      config,
+      `No text found using path: ${config.path ?? ''}`
+    )
 
-    this.textProcessor = this.processor.get('Text')
+    if (text === null) {
+      return null
+    }
+
+    const formatted = formatText(config, text, vars)
+
+    if (isNaN(+formatted)) {
+      throw new Error(`value is not a valid number: ${text} -> ${formatted}`)
+    }
+
+    return +formatted
   }
-
-  async process(conf: Config, node: ElementHandle): Promise<number | null> {
-    const result = await this.textProcessor.process(conf, node)
-    const num = Number(result)
-    return isNaN(num) ? num : null
-  }
-}
+})
