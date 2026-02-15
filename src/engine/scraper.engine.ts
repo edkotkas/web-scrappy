@@ -1,50 +1,50 @@
-import { type VariableContainer } from '../context/vars.service.js'
 import type {
   AdapterPage,
   BrowserAdapter
 } from '../interfaces/browser-adapter.interface.js'
 import type { ScraperConfig } from '../interfaces/scraper-config.interface.js'
 import { ProcessorRegistry } from '../processors/processor.registry.js'
+import { type VariableContainer } from '../utils/variable.js'
 
-export class ScraperEngine {
-  constructor(
-    private readonly browser: BrowserAdapter,
-    private readonly registry: ProcessorRegistry,
-    private readonly vars: VariableContainer
-  ) {}
+export type ScrapeFunc = (config: ScraperConfig) => Promise<unknown>
 
-  async scrape(config: ScraperConfig): Promise<unknown> {
+export function createScraper(
+  browser: BrowserAdapter,
+  registry: ProcessorRegistry,
+  vars: VariableContainer
+): ScrapeFunc {
+  async function scrape(config: ScraperConfig): Promise<unknown> {
     if (!config.url) {
       throw new Error('url is required')
     }
 
     const startTime = Date.now()
-    const page = await this.browser.createPage()
+    const page = await browser.createPage()
 
-    await this.browser.navigateToPage(page, {
+    await browser.navigateToPage(page, {
       url: config.url,
       config
     })
 
-    this.vars.setupPage(page)
+    vars.setupPage(page)
 
-    const data = await this.extractData(page, config)
+    const data = await extractData(page, config)
 
     const duration = Date.now() - startTime
 
-    await this.browser.closePage(page)
+    await browser.closePage(page)
 
     console.log(`Scraping completed in ${duration.toString()}ms`)
 
     return data
   }
 
-  async extractData(
+  async function extractData(
     page: AdapterPage,
     config: ScraperConfig
   ): Promise<unknown> {
-    const processor = this.registry.get(config.type)
-    const element = await this.browser.root(page, config.root)
+    const processor = registry.get(config.type)
+    const element = await browser.root(page, config.root)
 
     if (!element) {
       throw new Error('failed to get root element: ' + (config.root ?? 'html'))
@@ -54,15 +54,17 @@ export class ScraperEngine {
       page,
       element,
       config,
-      vars: this.vars,
-      browser: this.browser,
-      registry: this.registry
+      vars,
+      browser,
+      registry
     })
 
     if (config.id) {
-      this.vars.set(config.id, result as string)
+      vars.set(config.id, result as string)
     }
 
     return result
   }
+
+  return scrape
 }

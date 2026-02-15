@@ -1,5 +1,5 @@
-import type { VariableContainer } from '../../context/index.js'
 import type { ScraperConfig } from '../../interfaces/scraper-config.interface.js'
+import type { VariableContainer } from '../../utils/variable.js'
 
 export function formatText(
   config: ScraperConfig,

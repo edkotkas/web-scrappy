@@ -1,5 +1,7 @@
+import { PlaywrightAdapter } from './adapters/playwright/playwright.adapter.js'
+import { createScraper, type ScrapeFunc } from './engine/scraper.engine.js'
+import type { BrowserAdapter } from './interfaces/browser-adapter.interface.js'
 import {
-  type ProcessorRegistry,
   createAttributeProcessor,
   createFollowProcessor,
   createHtmlProcessor,
@@ -8,21 +10,23 @@ import {
   createNumberProcessor,
   createObjectProcessor,
   createRegistry,
-  createTextProcessor
-} from '@processors'
-import { PlaywrightAdapter } from './adapters/playwright/playwright.adapter.js'
-import { createVariableContainer } from './context/vars.service.js'
-import { ScraperEngine } from './engine/scraper.engine.js'
-import type { BrowserAdapter } from './interfaces/browser-adapter.interface.js'
+  createTextProcessor,
+  type ProcessorRegistry
+} from './processors/index.js'
+import { createVariableContainer } from './utils/variable.js'
 
 export interface ScraperContext {
   registry: ProcessorRegistry
-  engine: ScraperEngine
+  scrape: ScrapeFunc
 }
 
-export async function createScraper(
+export interface ScraperOptions {
   adapter?: BrowserAdapter
-): Promise<ScraperContext> {
+}
+
+export async function createScraperEngine({
+  adapter
+}: ScraperOptions = {}): Promise<ScraperContext> {
   const browser = adapter ?? new PlaywrightAdapter()
 
   if ('initialize' in browser) {
@@ -41,10 +45,10 @@ export async function createScraper(
   registry.defer('image', createImageProcessor)
   registry.defer('follow', createFollowProcessor)
 
-  const engine = new ScraperEngine(browser, registry, vars)
+  const scrape = createScraper(browser, registry, vars)
 
   return {
     registry,
-    engine
+    scrape
   }
 }

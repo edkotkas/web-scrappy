@@ -16,13 +16,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "removeComments": true,
-    "forceConsistentCasingInFileNames": true,
-    "paths": {
-      "@models": ["./src/models/index.ts"],
-      "@services": ["./src/services/index.ts"],
-      "@processors": ["./src/processors/index.ts"],
-      "@utils": ["./src/utils/index.ts"]
-    }
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["./node_modules", "./dist"]
 }

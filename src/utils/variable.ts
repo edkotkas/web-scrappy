@@ -13,8 +13,8 @@ export interface VariableContainer {
 
 export function createVariableContainer(): VariableContainer {
   const container = new Map<string, string>()
-  const varsRegex = /\$*\{([^}]+)\}/g
-  const predefinedVarKeys = new Set([
+  const pattern = /\$*\{([^}]+)\}/g
+  const predefinedKeys = new Set([
     'url',
     'hostname',
     'protocol',
@@ -31,7 +31,7 @@ export function createVariableContainer(): VariableContainer {
 
     const url = new URL(page.url())
 
-    for (const key of predefinedVarKeys) {
+    for (const key of predefinedKeys) {
       const value = url[key as keyof URL] as string | undefined
 
       container.set(key, value ?? '')
@@ -58,7 +58,7 @@ export function createVariableContainer(): VariableContainer {
 
   function replace(text: string): string {
     return text.replace(
-      varsRegex,
+      pattern,
       (_, dollarVar: string | undefined, braceVar: string | undefined) => {
         const varName = dollarVar ?? braceVar ?? ''
         const value = container.get(varName)
@@ -81,7 +81,7 @@ export function createVariableContainer(): VariableContainer {
   }
 
   function restoreForPage(vars: Map<string, string>): void {
-    for (const key of predefinedVarKeys) {
+    for (const key of predefinedKeys) {
       const value = vars.get(key)
 
       if (value !== undefined) {

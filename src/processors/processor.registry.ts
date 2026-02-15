@@ -1,10 +1,10 @@
-import type { VariableContainer } from '../context/vars.service.js'
 import type {
   AdapterElement,
   AdapterPage,
   BrowserAdapter
 } from '../interfaces/browser-adapter.interface.js'
 import type { ScraperConfig } from '../interfaces/scraper-config.interface.js'
+import type { VariableContainer } from '../utils/variable.js'
 
 export interface ProcessorContext {
   page: AdapterPage
