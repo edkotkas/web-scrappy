@@ -44,7 +44,8 @@ export default defineConfig(
           prev: ['const', 'let', 'var'],
           next: ['const', 'let', 'var']
         }
-      ]
+      ],
+      '@typescript-eslint/unbound-method': ['off']
     }
   }
 )
