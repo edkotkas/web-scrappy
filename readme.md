@@ -1,60 +1,11 @@
-# web-scrappy 
-[![install size](https://packagephobia.com/badge?p=web-scrappy)](https://packagephobia.com/result?p=web-scrappy)
-[![c8 config on GitHub](https://img.shields.io/nycrc/edkotkas/web-scrappy?config=.c8rc.json)](coverage\index.html)
-[![Snyk Vulnerabilities for npm package](https://img.shields.io/snyk/vulnerabilities/npm/web-scrappy)](https://img.shields.io/snyk/vulnerabilities/npm/web-scrappy)
+# ayumi 
+[![install size](https://packagephobia.com/badge?p=ayumi)](https://packagephobia.com/result?p=ayumi)[![c8 config on GitHub](https://img.shields.io/nycrc/edkotkas/ayumi?config=.c8rc.json)](coverage\index.html)[![Node.js Package](https://github.com/edkotkas/ayumi/actions/workflows/publish.yml/badge.svg)](https://github.com/edkotkas/ayumi/actions/workflows/publish.yml)
 
-[![Node.js CI](https://github.com/edkotkas/web-scrappy/actions/workflows/ci.yml/badge.svg)](https://github.com/edkotkas/web-scrappy/actions/workflows/ci.yml)
-[![Node.js Package](https://github.com/edkotkas/web-scrappy/actions/workflows/publish.yml/badge.svg)](https://github.com/edkotkas/web-scrappy/actions/workflows/publish.yml)
+[![npm](https://img.shields.io/npm/v/ayumi)](https://www.npmjs.com/package/ayumi)
 
-[![npm](https://img.shields.io/npm/v/web-scrappy)](https://www.npmjs.com/package/web-scrappy)
-
-## web-scrappy
+## ayumi
 
 Yet another web scraper, get a site, make a config and get data!
-
-
-## Install
-
-```bash
-npm install -g web-scrappy
-```
-
-## Usage
-
-```bash
-scrappy <url> <configFile[;configFile]> [outFile]
-```
-
-## Developing
-Get up and running with web-scrappy on your local machine.
-
-### Prerequisites
-
-- Node: Version 19 or higher
-
-### Installing
--  Clone the repository (or fork it)
-```bash
-git clone https://github.com/edkotkas/web-scrappy.git && cd web-scrappy
-```
-
-- Install the dev dependencies
-```bash
-npm i
-```
-
-- Run the script
-```bash
-npm run dev -- <url> <configFile[;configFile]> [outFile]
-```
-
-- Add issues to Github, make changes to the project and create pull requests for review
-
-### Tests
-Run the tests
-```bash
-npm test
-```
 
 ## License
 

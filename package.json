@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --build tsconfig.build.json",
     "dev": "tsc --watch",
     "lint": "npx --node-options='--experimental-strip-types' eslint --flag unstable_native_nodejs_ts_config \"src/**/*.ts\" --fix",
     "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
@@ -20,12 +20,12 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/edkotkas/web-scrappy.git"
+    "url": "git+https://github.com/edkotkas/ayumi.git"
   },
   "bugs": {
-    "url": "https://github.com/edkotkas/web-scrappy/issues"
+    "url": "https://github.com/edkotkas/ayumi/issues"
   },
-  "homepage": "https://github.com/edkotkas/web-scrappy#readme",
+  "homepage": "https://github.com/edkotkas/ayumi#readme",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
