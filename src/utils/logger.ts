@@ -1,26 +1,20 @@
 export const createLogger = (context?: string) => {
-  function log(message: string, ...args: unknown[]): void {
-    const prefix = context ? `[${context}]` : ''
+  const prefix = context ? `[${context}] ` : ''
 
-    console.log(`${prefix} ${message}`, ...args)
+  function log(message: string, ...args: unknown[]): void {
+    console.log(`${prefix}${message}`, ...args)
   }
 
   function error(message: string, ...args: unknown[]): void {
-    const prefix = context ? `[${context}]` : ''
-
-    console.error(`${prefix} ${message}`, ...args)
+    console.error(`${prefix}${message}`, ...args)
   }
 
   function warn(message: string, ...args: unknown[]): void {
-    const prefix = context ? `[${context}]` : ''
-
-    console.warn(`${prefix} ${message}`, ...args)
+    console.warn(`${prefix}${message}`, ...args)
   }
 
   function debug(message: string, ...args: unknown[]): void {
-    const prefix = context ? `[${context}]` : ''
-
-    console.debug(`${prefix} ${message}`, ...args)
+    console.debug(`${prefix}${message}`, ...args)
   }
 
   return {

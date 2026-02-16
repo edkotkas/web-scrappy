@@ -1,38 +1,30 @@
 import type { NavigationWaitUntil } from './browser-adapter.interface.js'
-export class WaitConfig {
-  type!: NavigationWaitUntil
+export interface WaitConfig {
+  type: NavigationWaitUntil
   value?: string
   timeout?: number
 }
 
 export type ListOrderDirection = 'asc' | 'desc' | 'reverse'
 
-export class ListOrder {
+export interface ListOrder {
   by?: string
   direction?: ListOrderDirection
 }
 
-export class PatternDto {
-  match!: string
+export interface Pattern {
+  match: string
   index?: number
   replace?: string
   flags?: string
 }
 
-export type ConfigType =
-  | 'html'
-  | 'text'
-  | 'attribute'
-  | 'image'
-  | 'list'
-  | 'object'
-  | 'reference'
-  | 'follow'
+export type ConfigType = 'html' | 'text' | 'number' | 'attribute' | 'image' | 'list' | 'object' | 'reference' | 'follow'
 
 export type PathType = 'css' | 'xpath'
 
-export class ScraperConfig {
-  type!: ConfigType
+export interface ScraperConfig {
+  type: ConfigType
   url?: string
   path?: string
   pathType?: PathType
@@ -52,7 +44,7 @@ export class ScraperConfig {
   prepend?: string
   append?: string
   trim?: boolean
-  pattern?: PatternDto
+  pattern?: Pattern
   key?: string
   id?: string
   props?: ScraperConfig[]

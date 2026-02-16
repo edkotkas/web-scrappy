@@ -1,23 +1,10 @@
 import * as os from 'node:os'
-import {
-  chromium,
-  type BrowserContext,
-  type ElementHandle,
-  type Page,
-  type Response
-} from 'patchright'
-import type {
-  BrowserAdapter,
-  NavigationWaitUntil,
-  ResponseData
-} from '../../interfaces/browser-adapter.interface.js'
+import { chromium, type BrowserContext, type ElementHandle, type Page, type Response } from 'patchright'
+import type { BrowserAdapter, NavigationWaitUntil, ResponseData } from '../../interfaces/browser-adapter.interface.js'
 import type { NavigationOptions } from '../../interfaces/navigation-options.interface.js'
 import type { ScraperConfig } from '../../interfaces/scraper-config.interface.js'
 
-export class PlaywrightAdapter implements BrowserAdapter<
-  Page,
-  ElementHandle<SVGElement | HTMLElement>
-> {
+export class PlaywrightAdapter implements BrowserAdapter<Page, ElementHandle<SVGElement | HTMLElement>> {
   private browser: BrowserContext | null = null
   private readonly responseMap = new Map<string, ResponseData>()
   private readonly tempDir = os.tmpdir() + '/ayumi-scraper-data'
@@ -32,9 +19,7 @@ export class PlaywrightAdapter implements BrowserAdapter<
     return this.browser
   }
 
-  private mapWaitUntil(
-    waitUntil: NavigationWaitUntil
-  ): 'load' | 'domcontentloaded' | 'networkidle' {
+  private mapWaitUntil(waitUntil: NavigationWaitUntil): 'load' | 'domcontentloaded' | 'networkidle' {
     if (waitUntil === 'networkidle0' || waitUntil === 'networkidle2') {
       return 'networkidle'
     }
@@ -98,13 +83,8 @@ export class PlaywrightAdapter implements BrowserAdapter<
     }
   }
 
-  async root(
-    page: Page,
-    path?: string
-  ): Promise<ElementHandle<SVGElement | HTMLElement>> {
-    return page.$(path ?? 'html') as Promise<
-      ElementHandle<SVGElement | HTMLElement>
-    >
+  async root(page: Page, path?: string): Promise<ElementHandle<SVGElement | HTMLElement>> {
+    return page.$(path ?? 'html') as Promise<ElementHandle<SVGElement | HTMLElement>>
   }
 
   getResponse(url: string, contentType?: string): ResponseData | undefined {
@@ -122,6 +102,17 @@ export class PlaywrightAdapter implements BrowserAdapter<
   }
 
   async closePage(page: Page): Promise<void> {
+    if (page.isClosed()) {
+      return
+    }
+
+    if (this.browser?.pages().length === 1) {
+      await this.browser.close()
+      this.browser = null
+
+      return
+    }
+
     await page.close()
   }
 
@@ -143,15 +134,10 @@ export class PlaywrightAdapter implements BrowserAdapter<
     element: ElementHandle<SVGElement | HTMLElement>,
     selector: string
   ): Promise<ElementHandle<SVGElement | HTMLElement> | null> {
-    return this.extractNodes(element, selector).then(
-      (handles) => handles[0] ?? null
-    )
+    return this.extractNodes(element, selector).then((handles) => handles[0] ?? null)
   }
 
-  async extractHtml(
-    element: ElementHandle<SVGElement | HTMLElement>,
-    config: ScraperConfig
-  ): Promise<string | null> {
+  async extractHtml(element: ElementHandle<SVGElement | HTMLElement>, config: ScraperConfig): Promise<string | null> {
     if (!config.path) {
       throw new Error('path is required for html extraction')
     }
@@ -186,10 +172,7 @@ export class PlaywrightAdapter implements BrowserAdapter<
     return node.evaluate((el, attr) => el.getAttribute(attr), config.attribute)
   }
 
-  async extractText(
-    element: ElementHandle<SVGElement | HTMLElement>,
-    config: ScraperConfig
-  ): Promise<string | null> {
+  async extractText(element: ElementHandle<SVGElement | HTMLElement>, config: ScraperConfig): Promise<string | null> {
     if (!config.path) {
       throw new Error('path is required for text extraction')
     }
